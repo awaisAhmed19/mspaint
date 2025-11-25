@@ -4,10 +4,33 @@ class Sidebar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isFloating: false,
+      floating: false,
       dragging: false,
-      position: { x: 30, y: 80 },
-      offset: { x: 0, y: 0 },
+      hold: false,
+      startMouse: { x: 0, y: 0 },
+      startPos: { x: 0, y: 0 },
+      position: { x: 0, y: 0 },
+    };
+
+    this.Toolsfootnote = {
+      lasso: "Selects a free-form of the picture to move, copy, or edit.",
+      rectlasso:
+        "Selects a rectanglar part of the picture to move, copy or edit.",
+      eraser:
+        "Erases a portion of the picture, using the selected eraser shape.",
+      floodfill: "Fills an area with the selected drawing color",
+      eyedrop: "Picks up a color from the picture for drawing",
+      magnification: "Changes the magnification",
+      pencil: "Draws a free-form one pixel wide",
+      brush: "Draws using a brush with the selected shape and size",
+      airbrush: "Draws using an airbrush of the selected size",
+      text: "Inserts text into the picture",
+      line: "Draws a straight line with the selected line width",
+      curveline: "Draws a curved line with the selected line width",
+      rectshape: "Draws a rectangle with the selected fill style",
+      polygonshape: "Draws a polygon with the selected fill style",
+      ellipse: "Draws an ellipse with the selected fill style",
+      rectelipse: "Draws a rounded rectangle with the selected fill style",
     };
 
     this.sidebarRef = React.createRef();
@@ -23,58 +46,182 @@ class Sidebar extends React.Component {
     window.removeEventListener("mouseup", this.stopDrag);
   }
 
-  startDrag = (e) => {
+  startHoldToDetach = (e) => {
+    // don't drag while interacting with tools
+    if (e.target.closest(".toolbar")) return;
+
+    const timeout = setTimeout(() => {
+      this.setState({ floating: true, dragging: true });
+    }, 700);
+
     this.setState({
-      dragging: true,
-      isFloating: true, // detach from dock
-      offset: {
-        x: e.clientX - this.state.position.x,
-        y: e.clientY - this.state.position.y,
-      },
+      holdTimeout: timeout,
+      startMouse: { x: e.clientX, y: e.clientY },
+      startPos: { ...this.state.position },
     });
   };
 
   onDrag = (e) => {
-    if (!this.state.dragging) return;
+    const { dragging, floating, startMouse, startPos } = this.state;
+
+    if (!floating || !dragging) return;
+
+    const dx = e.clientX - startMouse.x;
+    const dy = e.clientY - startMouse.y;
 
     this.setState({
       position: {
-        x: e.clientX - this.state.offset.x,
-        y: e.clientY - this.state.offset.y,
+        x: startPos.x + dx,
+        y: startPos.y + dy,
       },
     });
   };
 
   stopDrag = () => {
-    this.setState({ dragging: false });
+    clearTimeout(this.state.holdTimeout);
+
+    if (!this.state.floating) return;
+
+    const { startMouse, position } = this.state;
+
+    const movedX = Math.abs(position.x - startMouse.x);
+    const movedY = Math.abs(position.y - startMouse.y);
+
+    const snap = movedX < 40 && movedY < 40;
+
+    if (snap) {
+      this.setState({
+        floating: false,
+        dragging: false,
+        position: { x: 30, y: 80 },
+      });
+    } else {
+      this.setState({ dragging: false });
+    }
   };
 
   render() {
-    const { isFloating, position, dragging } = this.state;
+    const { floating, position } = this.state;
+
+    const sidebarClass = this.state.floating ? "sidebar floating" : "sidebar";
     return (
       <>
-        <div className="sidebar" id="side-bar">
-          <div className="sidebar-floating-top" placeholder="Tools">
-            <button className="sidebar-close-button"></button>
+        <div
+          ref={this.sidebarRef}
+          className={sidebarClass}
+          style={{
+            position: this.state.floating ? "absolute" : "relative",
+            left: this.state.floating ? this.state.position.x : 0,
+            top: this.state.floating ? this.state.position.y : 0,
+            cursor: this.state.floating ? "grab" : "default",
+          }}
+          onMouseDown={this.startHoldToDetach}
+        >
+          <div
+            className="sidebar-floating-top"
+            style={{ display: this.state.floating ? "flex" : "none" }}
+          >
             Tools
+            <button className="sidebar-close-button"></button>
           </div>
+
           <div className="toolbar">
-            <button className="tools" id="rectlasso"></button>
-            <button className="tools" id="lasso"></button>
-            <button className="tools" id="eraser"></button>
-            <button className="tools" id="floodfill"></button>
-            <button className="tools" id="eyedrop"></button>
-            <button className="tools" id="magnification"></button>
-            <button className="tools" id="pencil"></button>
-            <button className="tools" id="brush"></button>
-            <button className="tools" id="airbrush"></button>
-            <button className="tools" id="text"></button>
-            <button className="tools" id="line"></button>
-            <button className="tools" id="curveline"></button>
-            <button className="tools" id="rectshape"></button>
-            <button className="tools" id="polygonshape"></button>
-            <button className="tools" id="ellipse"></button>
-            <button className="tools" id="rectelipse"></button>
+            <button
+              className="tools"
+              id="rectlasso"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
+            <button
+              className="tools"
+              id="lasso"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
+            <button
+              className="tools"
+              id="eraser"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
+            <button
+              className="tools"
+              id="floodfill"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
+            <button
+              className="tools"
+              id="eyedrop"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
+            <button
+              className="tools"
+              id="magnification"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
+            <button
+              className="tools"
+              id="pencil"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
+            <button
+              className="tools"
+              id="brush"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
+            <button
+              className="tools"
+              id="airbrush"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
+            <button
+              className="tools"
+              id="text"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
+            <button
+              className="tools"
+              id="line"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
+            <button
+              className="tools"
+              id="curveline"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
+            <button
+              className="tools"
+              id="rectshape"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
+            <button
+              className="tools"
+              id="polygonshape"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
+            <button
+              className="tools"
+              id="ellipse"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
+            <button
+              className="tools"
+              id="rectelipse"
+              onMouseEnter={this.handleEnter}
+              onMouseLeave={this.handleLeave}
+            ></button>
           </div>
           <div className="optionWindow" id="optionWindow"></div>
         </div>

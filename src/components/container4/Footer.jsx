@@ -28,17 +28,19 @@ class Footer extends React.Component {
   render() {
     return (
       <>
-        <div
-          className="footer-note"
-          id="foot-note"
-          ref={this.footnoteRef}
-        ></div>
-        <div
-          id="coordinate_value"
-          className="coordinates"
-          ref={this.coordValueRef}
-        ></div>
-        <div className="extra" id="dimensions" ref={this.extraRef}></div>
+        <div className="container-4">
+          <div
+            className="footer-note"
+            id="foot-note"
+            ref={this.footnoteRef}
+          ></div>
+          <div
+            id="coordinate_value"
+            className="coordinates"
+            ref={this.coordValueRef}
+          ></div>
+          <div className="extra" id="dimensions" ref={this.extraRef}></div>
+        </div>
       </>
     );
   }

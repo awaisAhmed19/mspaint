@@ -24,12 +24,7 @@ class App extends React.Component {
   render() {
     return (
       <>
-        <div className="container-1">
-          <Menubar
-            setFooter={this.setFooter}
-            clearFooter={this.defaultFooter}
-          />
-        </div>
+        <Menubar setFooter={this.setFooter} clearFooter={this.defaultFooter} />
         <div className="container-2">
           <Sidebar
             setFooter={this.setFooter}
@@ -38,12 +33,8 @@ class App extends React.Component {
           <Canvas Dim={{ WIDTH: 750, HEIGHT: 500 }} />
           <div className="right-sidebar"></div>
         </div>
-        <div className="container-3">
-          <Pallete />
-        </div>
-        <div className="container-4">
-          <Footer ref={this.footerRef} />
-        </div>
+        <Pallete />
+        <Footer ref={this.footerRef} />
       </>
     );
   }

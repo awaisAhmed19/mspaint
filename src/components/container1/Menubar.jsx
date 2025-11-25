@@ -94,18 +94,20 @@ class Menubar extends React.Component {
 
   render() {
     return (
-      <div ref={this.menuRef}>
-        <div className="menubar">
-          <button onClick={() => this.setActiveMenu("file")}>File</button>
-          <button onClick={() => this.setActiveMenu("edit")}>Edit</button>
-          <button onClick={() => this.setActiveMenu("view")}>View</button>
-          <button onClick={() => this.setActiveMenu("layer")}>Layer</button>
-          <button onClick={() => this.setActiveMenu("image")}>Image</button>
-          <button onClick={() => this.setActiveMenu("colors")}>Color</button>
-          <button onClick={() => this.setActiveMenu("help")}>Help</button>
-        </div>
+      <div className="container-1">
+        <div ref={this.menuRef}>
+          <div className="menubar">
+            <button onClick={() => this.setActiveMenu("file")}>File</button>
+            <button onClick={() => this.setActiveMenu("edit")}>Edit</button>
+            <button onClick={() => this.setActiveMenu("view")}>View</button>
+            <button onClick={() => this.setActiveMenu("layer")}>Layer</button>
+            <button onClick={() => this.setActiveMenu("image")}>Image</button>
+            <button onClick={() => this.setActiveMenu("colors")}>Color</button>
+            <button onClick={() => this.setActiveMenu("help")}>Help</button>
+          </div>
 
-        <DropdownContainer>{this.renderMenu()}</DropdownContainer>
+          <DropdownContainer>{this.renderMenu()}</DropdownContainer>
+        </div>
       </div>
     );
   }
