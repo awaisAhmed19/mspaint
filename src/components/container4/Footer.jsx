@@ -8,21 +8,24 @@ class Footer extends React.Component {
     this.extraRef = React.createRef();
   }
 
-  displayFooterMessage(msg) {
+  updateMessage(msg) {
     if (this.footnoteRef.current) {
       this.footnoteRef.current.textContent = msg;
     }
   }
 
-  displayCoordMessage(msg) {
+  updateCoord(msg) {
     if (this.coordValueRef.current) {
-      this.coordValueRef.current.textContent = msg;
+      this.coordValueRef.current.textContent = `${msg.x},${msg.y}`;
     }
   }
+  defaultCoordMessage() {
+    this.coordValueRef.current.textContent = " ";
+  }
 
-  displayExtraMessage(msg) {
+  updateDim(msg) {
     if (this.extraRef.current) {
-      this.extraRef.current.textContent = msg;
+      this.extraRef.current.textContent = `${msg.width},${msg.height}`;
     }
   }
   render() {

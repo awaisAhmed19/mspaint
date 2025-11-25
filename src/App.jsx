@@ -8,32 +8,63 @@ import Footer from "./components/container4/Footer";
 class App extends React.Component {
   constructor(props) {
     super(props);
+
     this.footerRef = React.createRef();
+    this.canvasRef = React.createRef();
+
+    this.state = {
+      currTool: "pencil",
+      currColor: "black",
+      defaultFooterMsg: "For Help, click Help Topics on the Help Menu",
+    };
   }
 
-  setFooter = (msg) => {
-    this.footerRef.current.displayFooterMessage(msg);
+  footer = {
+    coord: (pos) => this.footerRef.current.updateCoord(pos),
+    dim: (dim) => this.footerRef.current.updateDim(dim),
+    msg: (text) => this.footerRef.current.updateMessage(text),
+    resetMsg: () =>
+      this.footerRef.current.updateMessage(this.state.defaultFooterMsg),
   };
 
-  defaultFooter = () => {
-    this.footerRef.current.displayFooterMessage(
-      "For Help, click Help Topics on the Help Menu",
-    );
+  setTool = (toolName) => {
+    this.setState({ currTool: toolName });
+  };
+
+  setColor = (color) => {
+    this.setState({ currColor: color });
   };
 
   render() {
     return (
       <>
-        <Menubar setFooter={this.setFooter} clearFooter={this.defaultFooter} />
+        <Menubar
+          setFooter={this.footer.msg}
+          clearFooter={this.footer.resetMsg}
+        />
+
         <div className="container-2">
           <Sidebar
-            setFooter={this.setFooter}
-            clearFooter={this.defaultFooter}
+            setFooter={this.footer.msg}
+            clearFooter={this.footer.resetMsg}
+            setTool={this.setTool}
           />
-          <Canvas Dim={{ WIDTH: 750, HEIGHT: 500 }} />
+
+          <Canvas
+            ref={this.canvasRef}
+            Dim={{ WIDTH: 750, HEIGHT: 500 }}
+            coord={this.footer.coord}
+            clearCoord={this.footer.coord} // optional: set empty on leave
+            dim={this.footer.dim}
+            tool={this.state.currTool}
+            color={this.state.currColor}
+          />
+
           <div className="right-sidebar"></div>
         </div>
-        <Pallete />
+
+        <Pallete setColor={this.setColor} />
+
         <Footer ref={this.footerRef} />
       </>
     );

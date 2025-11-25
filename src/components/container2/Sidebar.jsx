@@ -35,7 +35,19 @@ class Sidebar extends React.Component {
 
     this.sidebarRef = React.createRef();
   }
+  handleEnter = (e) => {
+    const id = e.currentTarget.id;
 
+    if (this.Toolsfootnote[id]) {
+      this.props.setFooter(this.Toolsfootnote[id]);
+    } else {
+      console.warn("No footnote found for:", id);
+    }
+  };
+
+  handleLeave = () => {
+    this.props.clearFooter();
+  };
   componentDidMount() {
     window.addEventListener("mousemove", this.onDrag);
     window.addEventListener("mouseup", this.stopDrag);

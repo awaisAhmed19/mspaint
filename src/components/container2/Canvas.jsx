@@ -1,14 +1,31 @@
 import React from "react";
-
 class Canvas extends React.Component {
   constructor(props) {
     super(props);
-    this.Width = this.props.Dim.WIDTH;
-    this.Height = this.props.Dim.HEIGHT;
+    this.Width = props.Dim.WIDTH;
+    this.Height = props.Dim.HEIGHT;
+
+    this.canvasContainerRef = React.createRef();
     this.canvasRef = React.createRef();
     this.canvasBufferRef = React.createRef();
     this.selectionRef = React.createRef();
+    this.pos = { x: 0, y: 0 };
+    this.isResizing = false;
+    this.currentHandle = null;
   }
+  getMousePos = (targetCanvas, e) => {
+    const rect = targetCanvas.getBoundingClientRect();
+
+    const x = Math.floor(
+      (e.clientX - rect.left) * (targetCanvas.width / rect.width),
+    );
+    const y = Math.floor(
+      (e.clientY - rect.top) * (targetCanvas.height / rect.height),
+    );
+
+    return { x, y };
+  };
+
   componentDidMount() {
     this.ctx = this.canvasRef.current.getContext("2d");
     this.buf = this.canvasBufferRef.current.getContext("2d");
@@ -22,74 +39,131 @@ class Canvas extends React.Component {
 
     this.selectionRef.current.width = this.Width;
     this.selectionRef.current.height = this.Height;
+
+    window.addEventListener("mousemove", this.resize);
+    window.addEventListener("mouseup", this.stopResize);
+
+    this.canvasRef.current.addEventListener("mousemove", (e) => {
+      const pos = this.getMousePos(this.canvasRef.current, e);
+      this.props.coord(pos);
+    });
+    this.selectionRef.current.addEventListener("mousemove", (e) => {
+      const pos = this.getMousePos(this.selectionRef.current, e);
+      this.props.coord(pos);
+    });
+    this.canvasBufferRef.current.addEventListener("mousemove", (e) => {
+      const pos = this.getMousePos(this.canvasBufferRef.current, e);
+      this.props.coord(pos);
+    });
   }
+
+  componentWillUnmount() {
+    window.removeEventListener("mousemove", this.resize);
+    window.removeEventListener("mouseup", this.stopResize);
+  }
+
+  resizeCanvas = () => {
+    const canvas = this.canvasRef.current;
+    const buffer = this.canvasBufferRef.current;
+    const container = this.canvasContainerRef.current;
+
+    buffer.width = canvas.width;
+    buffer.height = canvas.height;
+    this.buf.drawImage(canvas, 0, 0);
+
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+    this.props.dim(canvas);
+    this.ctx.drawImage(buffer, 0, 0);
+  };
+
+  startResize = (e) => {
+    this.isResizing = true;
+    this.currentHandle = e.target;
+  };
+
+  resize = (e) => {
+    if (!this.isResizing) return;
+
+    const container = this.canvasContainerRef.current;
+    const rect = container.getBoundingClientRect();
+
+    let w = container.clientWidth;
+    let h = container.clientHeight;
+
+    if (this.currentHandle.classList.contains("right")) {
+      w = e.clientX - rect.left;
+      if (w < 100) w = 100;
+      container.style.width = `${w}px`;
+    }
+
+    if (this.currentHandle.classList.contains("bottom")) {
+      h = e.clientY - rect.top;
+      if (h < 100) h = 100;
+      container.style.height = `${h}px`;
+    }
+
+    if (this.currentHandle.classList.contains("corner")) {
+      w = e.clientX - rect.left;
+      h = e.clientY - rect.top;
+      if (w < 100) w = 100;
+      if (h < 100) h = 100;
+      container.style.width = `${w}px`;
+      container.style.height = `${h}px`;
+    }
+
+    this.resizeCanvas();
+  };
+
+  stopResize = () => {
+    this.isResizing = false;
+    this.currentHandle = null;
+  };
 
   render() {
     return (
-      <div className="canvasbackcontainer" id="canvas-back-container">
+      <div className="canvasbackcontainer">
         <div
           className="canvascontainer"
-          id="canvas-container"
+          ref={this.canvasContainerRef}
           style={{
             width: this.Width,
             height: this.Height,
           }}
         >
           <canvas
-            id="canvas"
             ref={this.canvasRef}
+            onMouseLeave={this.props.clearCoords}
             className="canvas"
-            style={{
-              width: "100%",
-              height: "100%",
-              background: "white",
-            }}
+            style={{ width: "100%", height: "100%", background: "white" }}
           />
 
           <canvas
-            id="canvasbuffer"
             ref={this.canvasBufferRef}
-            style={{
-              display: "none",
-              zIndex: 3,
-              position: "inherit",
-              top: "3px",
-              left: "3px",
-              width: "100%",
-              height: "100%",
-              border: "none",
-            }}
+            onMouseLeave={this.props.clearCoords}
+            style={{ display: "none" }}
           ></canvas>
 
           <canvas
-            id="selectionbuffer"
             ref={this.selectionRef}
-            style={{
-              display: "none",
-              position: "inherit",
-              zIndex: 99,
-              border: "none",
-            }}
+            onMouseLeave={this.props.clearCoords}
+            style={{ display: "none", zIndex: 99 }}
           ></canvas>
-
-          <textarea id="textarea" className="hidden"></textarea>
 
           <img
             src="../../../imgs/point.png"
             className="resize-handle right"
-            alt="right handle"
+            onMouseDown={this.startResize}
           />
-
           <img
             src="../../../imgs/point.png"
             className="resize-handle bottom"
-            alt="bottom handle"
+            onMouseDown={this.startResize}
           />
-
           <img
             src="../../../imgs/point.png"
             className="resize-handle corner"
-            alt="corner handle"
+            onMouseDown={this.startResize}
           />
         </div>
       </div>
