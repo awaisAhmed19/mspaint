@@ -44,17 +44,47 @@ class Menubar extends React.Component {
 
     switch (activeMenu) {
       case "file":
-        return <FileMenu />;
+        return (
+          <FileMenu
+            setFooter={this.props.setFooter}
+            clearFooter={this.props.clearFooter}
+          />
+        );
       case "edit":
-        return <EditMenu />;
+        return (
+          <EditMenu
+            setFooter={this.props.setFooter}
+            clearFooter={this.props.clearFooter}
+          />
+        );
       case "view":
-        return <ViewMenu />;
+        return (
+          <ViewMenu
+            setFooter={this.props.setFooter}
+            clearFooter={this.props.clearFooter}
+          />
+        );
       case "layer":
-        return <LayerMenu />;
+        return (
+          <LayerMenu
+            setFooter={this.props.setFooter}
+            clearFooter={this.props.clearFooter}
+          />
+        );
       case "image":
-        return <ImageMenu />;
+        return (
+          <ImageMenu
+            setFooter={this.props.setFooter}
+            clearFooter={this.props.clearFooter}
+          />
+        );
       case "colors":
-        return <ColorMenu />;
+        return (
+          <ColorMenu
+            setFooter={this.props.setFooter}
+            clearFooter={this.props.clearFooter}
+          />
+        );
       //case "help":
       // return <HelpMenu />;
       default:
