@@ -57,6 +57,11 @@ class Canvas extends React.Component {
     });
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.toolInstance && prevProps.toolConfig !== this.props.toolConfig) {
+      this.toolInstance.updateOptions(this.props.toolConfig);
+    }
+  }
   componentWillUnmount() {
     window.removeEventListener("mousemove", this.resize);
     window.removeEventListener("mouseup", this.stopResize);
@@ -151,17 +156,17 @@ class Canvas extends React.Component {
           ></canvas>
 
           <img
-            src="../../../imgs/point.png"
+            src="../../imgs/point.png"
             className="resize-handle right"
             onMouseDown={this.startResize}
           />
           <img
-            src="../../../imgs/point.png"
+            src="../../imgs/point.png"
             className="resize-handle bottom"
             onMouseDown={this.startResize}
           />
           <img
-            src="../../../imgs/point.png"
+            src="../../imgs/point.png"
             className="resize-handle corner"
             onMouseDown={this.startResize}
           />

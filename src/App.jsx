@@ -15,10 +15,14 @@ class App extends React.Component {
     this.state = {
       currTool: "pencil",
       currColor: "black",
+      toolConfig: {}, // ADD THIS
       defaultFooterMsg: "For Help, click Help Topics on the Help Menu",
     };
   }
 
+  setToolConfig = (config) => {
+    this.setState({ toolConfig: config });
+  };
   footer = {
     coord: (pos) => this.footerRef.current.updateCoord(pos),
     dim: (dim) => this.footerRef.current.updateDim(dim),
@@ -48,16 +52,18 @@ class App extends React.Component {
             setFooter={this.footer.msg}
             clearFooter={this.footer.resetMsg}
             setTool={this.setTool}
+            currConfig={this.state.toolConfig} // ADD
+            onToolConfigChange={this.setToolConfig} // ADD
           />
-
           <Canvas
             ref={this.canvasRef}
             Dim={{ WIDTH: 750, HEIGHT: 500 }}
             coord={this.footer.coord}
-            clearCoord={this.footer.coord} // optional: set empty on leave
+            clearCoord={this.footer.coord}
             dim={this.footer.dim}
             tool={this.state.currTool}
             color={this.state.currColor}
+            toolConfig={this.state.toolConfig} // ADD THIS
           />
 
           <div className="right-sidebar"></div>

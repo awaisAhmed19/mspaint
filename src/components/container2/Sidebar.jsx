@@ -1,17 +1,43 @@
 import React from "react";
-
+import AirBrush, { AirBrushOptions } from "./AirBrush.jsx";
+import Brush, { BrushOptions } from "./Brush.jsx";
+import CurveLine, { CurveLineOptions } from "./CurveLine.jsx";
+import Ellipse, { EllipseOptions } from "./Ellipse.jsx";
+import Eraser, { EraserOptions } from "./Eraser.jsx";
+import EyeDrop from "./EyeDrop.jsx";
+import FloodFill from "./FloodFill.jsx";
+import Lasso from "./Lasso.jsx";
+import RectLasso from "./RectLasso.jsx";
+import Line, { LineOptions } from "./Line.jsx";
+import Magnifications, { MagnificationOptions } from "./Magnification.jsx";
+import Pencil from "./Pencil.jsx";
+import PolygonShape, { PolygonOptions } from "./PolygonShape.jsx";
+import RectElipse, { RectElipseOptions } from "./RectElipse.jsx";
+import RectShape, { RectShapeOptions } from "./RectShape.jsx";
 class Sidebar extends React.Component {
   constructor(props) {
     super(props);
+
     this.state = {
       floating: false,
       dragging: false,
-      hold: false,
       startMouse: { x: 0, y: 0 },
       startPos: { x: 0, y: 0 },
       position: { x: 0, y: 0 },
+      currTool: "pencil",
+      prevTool: "pencil",
     };
-
+    this.TOOL_OPTIONS = {
+      airbrush: AirBrushOptions,
+      brush: BrushOptions,
+      curveline: CurveLineOptions,
+      ellipse: EllipseOptions,
+      eraser: EraserOptions,
+      line: LineOptions,
+      magnification: MagnificationOptions,
+      polygonshape: PolygonOptions,
+      rectelipse: RectElipseOptions,
+    };
     this.Toolsfootnote = {
       lasso: "Selects a free-form of the picture to move, copy, or edit.",
       rectlasso:
@@ -32,22 +58,20 @@ class Sidebar extends React.Component {
       ellipse: "Draws an ellipse with the selected fill style",
       rectelipse: "Draws a rounded rectangle with the selected fill style",
     };
-
     this.sidebarRef = React.createRef();
   }
+
   handleEnter = (e) => {
     const id = e.currentTarget.id;
-
     if (this.Toolsfootnote[id]) {
       this.props.setFooter(this.Toolsfootnote[id]);
-    } else {
-      console.warn("No footnote found for:", id);
     }
   };
 
   handleLeave = () => {
     this.props.clearFooter();
   };
+
   componentDidMount() {
     window.addEventListener("mousemove", this.onDrag);
     window.addEventListener("mouseup", this.stopDrag);
@@ -59,7 +83,6 @@ class Sidebar extends React.Component {
   }
 
   startHoldToDetach = (e) => {
-    // don't drag while interacting with tools
     if (e.target.closest(".toolbar")) return;
 
     const timeout = setTimeout(() => {
@@ -74,53 +97,34 @@ class Sidebar extends React.Component {
   };
 
   onDrag = (e) => {
-    const { dragging, floating, startMouse, startPos } = this.state;
+    if (!this.state.floating || !this.state.dragging) return;
 
-    if (!floating || !dragging) return;
-
-    const dx = e.clientX - startMouse.x;
-    const dy = e.clientY - startMouse.y;
+    const dx = e.clientX - this.state.startMouse.x;
+    const dy = e.clientY - this.state.startMouse.y;
 
     this.setState({
       position: {
-        x: startPos.x + dx,
-        y: startPos.y + dy,
+        x: this.state.startPos.x + dx,
+        y: this.state.startPos.y + dy,
       },
     });
   };
 
   stopDrag = () => {
     clearTimeout(this.state.holdTimeout);
-
     if (!this.state.floating) return;
 
-    const { startMouse, position } = this.state;
-
-    const movedX = Math.abs(position.x - startMouse.x);
-    const movedY = Math.abs(position.y - startMouse.y);
-
-    const snap = movedX < 40 && movedY < 40;
-
-    if (snap) {
-      this.setState({
-        floating: false,
-        dragging: false,
-        position: { x: 30, y: 80 },
-      });
-    } else {
-      this.setState({ dragging: false });
-    }
+    this.setState({ dragging: false });
   };
 
   render() {
-    const { floating, position } = this.state;
+    const OptionPanel = this.TOOL_OPTIONS[this.state.currTool];
 
-    const sidebarClass = this.state.floating ? "sidebar floating" : "sidebar";
     return (
       <>
         <div
           ref={this.sidebarRef}
-          className={sidebarClass}
+          className={this.state.floating ? "sidebar floating" : "sidebar"}
           style={{
             position: this.state.floating ? "absolute" : "relative",
             left: this.state.floating ? this.state.position.x : 0,
@@ -129,113 +133,129 @@ class Sidebar extends React.Component {
           }}
           onMouseDown={this.startHoldToDetach}
         >
-          <div
-            className="sidebar-floating-top"
-            style={{ display: this.state.floating ? "flex" : "none" }}
-          >
-            Tools
-            <button className="sidebar-close-button"></button>
-          </div>
-
+          {" "}
           <div className="toolbar">
             <button
               className="tools"
               id="rectlasso"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "rectlasso" })}
               onMouseLeave={this.handleLeave}
             ></button>
             <button
               className="tools"
               id="lasso"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "lasso" })}
               onMouseLeave={this.handleLeave}
             ></button>
             <button
               className="tools"
               id="eraser"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "eraser" })}
               onMouseLeave={this.handleLeave}
             ></button>
             <button
               className="tools"
               id="floodfill"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "floodfill" })}
               onMouseLeave={this.handleLeave}
             ></button>
             <button
               className="tools"
               id="eyedrop"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "eyedrop" })}
               onMouseLeave={this.handleLeave}
             ></button>
             <button
               className="tools"
               id="magnification"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "magnification" })}
               onMouseLeave={this.handleLeave}
             ></button>
             <button
               className="tools"
               id="pencil"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "pencil" })}
               onMouseLeave={this.handleLeave}
             ></button>
             <button
               className="tools"
               id="brush"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "brush" })}
               onMouseLeave={this.handleLeave}
             ></button>
             <button
               className="tools"
               id="airbrush"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "airbrush" })}
               onMouseLeave={this.handleLeave}
             ></button>
             <button
               className="tools"
               id="text"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "text" })}
               onMouseLeave={this.handleLeave}
             ></button>
             <button
               className="tools"
               id="line"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "line" })}
               onMouseLeave={this.handleLeave}
             ></button>
             <button
               className="tools"
               id="curveline"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "curveline" })}
               onMouseLeave={this.handleLeave}
             ></button>
             <button
               className="tools"
               id="rectshape"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "rectshape" })}
               onMouseLeave={this.handleLeave}
             ></button>
             <button
               className="tools"
               id="polygonshape"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "polygonshape" })}
               onMouseLeave={this.handleLeave}
             ></button>
             <button
               className="tools"
               id="ellipse"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "ellipse" })}
               onMouseLeave={this.handleLeave}
             ></button>
             <button
               className="tools"
               id="rectelipse"
               onMouseEnter={this.handleEnter}
+              onClick={() => this.setState({ currTool: "rectelipse" })}
               onMouseLeave={this.handleLeave}
             ></button>
           </div>
-          <div className="optionWindow" id="optionWindow"></div>
+          <div className="optionWindow">
+            {OptionPanel && (
+              <OptionPanel
+                selected={this.props.currConfig?.size}
+                onSelect={this.props.onToolConfigChange}
+              />
+            )}
+          </div>
         </div>
       </>
     );

@@ -329,6 +329,9 @@
   background-size: 240px 16px;
 }
 
+.ellipseOption.pressed {
+  background-color: navy;
+}
 #rectborder,
 #polygonborder,
 #ellipseborder,
@@ -360,7 +363,7 @@
 #filled-roundedrect-border.pressed,
 #filledpolygonborder.pressed {
   background-color: navy;
-  background-position: -145px 98 4px;
+  background-position: -145px 4px;
 }
 #filledrect.pressed,
 #filledpolygon.pressed,
@@ -399,6 +402,17 @@
 
 /* .Loptions.pressed { background-color: navy; } */
 
+.rectOption {
+  background-image: url("../imgs/options-rect.png");
+  background-repeat: no-repeat;
+  background-size: 300px 24px;
+  background-color: transparent;
+  border: none;
+}
+
+.rectOption.pressed {
+  background-color: navy;
+}
 .Loptions#Line1px.pressed {
   background-color: navy;
   background-position: -212px 0px;
@@ -418,6 +432,10 @@
 .Loptions#Line5px.pressed {
   background-color: navy;
   background-position: -380px -1px;
+}
+
+.magOption.pressed {
+  background-color: navy;
 }
 .MagnificationOptions button,
 .EraserOptions button {
