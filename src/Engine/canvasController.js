@@ -17,8 +17,10 @@ export default class CanvasController {
       prevPos: this.prevPos,
       color: state.color,
       size: state.size,
+      type: state.type,
       renderer: this.renderer,
       engine: this.engine,
+      setColor: state.setColor,
     };
   }
 
