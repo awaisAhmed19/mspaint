@@ -1,0 +1,41 @@
+/* ========== Base Reset ========== */
+
+:root {
+  --main-color: #bbbbbb;
+  --borderlight: rgb(238, 238, 238);
+  --borderdark: rgb(44, 44, 44);
+  --borderlighterdark: rgb(109, 109, 109);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+/* ========== Global Defaults ========== */
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  background: #000;
+  overflow: hidden;
+
+  padding: 0;
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  touch-action: none;
+}
