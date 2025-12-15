@@ -2,6 +2,10 @@ import { useEffect, useRef } from "react";
 import { createCanvasEngine } from "../Engine/canvasEngine.js";
 import CanvasController from "../Engine/canvasController";
 import { PencilTool, PencilRenderer } from "../Tools/pencil.js";
+import { EraserTool, EraserRenderer } from "../Tools/eraser.js";
+import { BrushTool, BrushRenderer } from "../Tools/brush.js";
+import { AirBrushTool, AirBrushRenderer } from "../Tools/airbrush.js";
+import { LineTool, LineRenderer } from "../Tools/line.js";
 
 function getPos(e, canvas) {
   const rect = canvas.getBoundingClientRect();
@@ -18,21 +22,30 @@ export default function CanvasHarness() {
     const canvas = canvasRef.current;
 
     const engine = createCanvasEngine(canvas);
-    const renderer = new PencilRenderer(canvas);
-    const pencil = new PencilTool();
+    const renderer = new LineRenderer(canvas);
+    const tool = new LineTool();
+
     const getState = () => ({
-      color: "#000",
+      color: "blue",
       size: 1,
     });
 
-    // controller (real-time brain)
+
     controllerRef.current = new CanvasController(
-      pencil,
+      tool,
       renderer,
+      engine,
       getState
     );
-  }, []);
 
+
+    console.group("Canvas Config Test");
+    console.log("Tool:", tool.constructor.name);
+    console.log("Renderer:", renderer.constructor.name);
+    console.log("State:", getState());
+    console.log("Controller OK:", !!controllerRef.current);
+    console.groupEnd();
+  }, []);
   function handlePointerDown(e) {
     const canvas = canvasRef.current;
     controllerRef.current?.pointerDown(getPos(e, canvas));

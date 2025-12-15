@@ -1,41 +1,46 @@
 export default class CanvasController {
-  constructor(tool, renderer, getState) {
+  constructor(tool, renderer, engine, getState) {
     this.tool = tool;
     this.renderer = renderer;
+    this.engine = engine;
     this.getState = getState;
+
     this.isDrawing = false;
     this.prevPos = null;
+  }
+
+  buildCtx(pos) {
+    const state = this.getState();
+
+    return {
+      pos,
+      prevPos: this.prevPos,
+      color: state.color,
+      size: state.size,
+      renderer: this.renderer,
+      engine: this.engine,
+    };
   }
 
   pointerDown(pos) {
     this.isDrawing = true;
     this.prevPos = pos;
-    this.tool.begin({
-      pos,
-      prevPos: null,
-      color: this.getState().color,
-      renderer: this.renderer,
-    });
+
+    this.tool.begin(this.buildCtx(pos));
   }
 
   pointerMove(pos) {
     if (!this.isDrawing) return;
-    this.tool.update({
-      pos,
-      prevPos: this.prevPos,
-      color: this.getState().color,
-      renderer: this.renderer,
-    });
+
+    this.tool.update(this.buildCtx(pos));
     this.prevPos = pos;
   }
 
   pointerUp(pos) {
     if (!this.isDrawing) return;
-    this.tool.end({
-      pos,
-      prevPos: this.prevPos,
-      renderer: this.renderer,
-    });
+
+    this.tool.end(this.buildCtx(pos));
     this.isDrawing = false;
+    this.prevPos = null;
   }
 }
