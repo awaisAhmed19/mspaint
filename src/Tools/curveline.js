@@ -1,7 +1,7 @@
-import { InteractionType } from "../Engine/Interaction/ToolInteraction.js";
-
 export class CurveLineTool {
-  interaction = InteractionType.MODAL;
+  constructor(meta) {
+    this.meta = meta;
+  }
 
   // semantic state
   hasStart = false;

@@ -1,1 +1,4 @@
-export const InteractionType = { STROKE: "stroke", MODAL: "modal" };
+export const InteractionType = {
+  STROKE: 1,
+  MODAL: 2,
+};

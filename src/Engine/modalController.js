@@ -2,8 +2,11 @@ import { InteractionType } from "./Interaction/ToolInteraction";
 
 export default class ModalController {
   constructor(tool, renderer, engine, getState) {
-    if (tool.interaction !== InteractionType.MODAL) {
-      throw new Error("ModalController received non-modal tool");
+    if (tool.meta.interaction != InteractionType.MODAL) {
+      console.log("interaction:", InteractionType.MODAL, "tool:", tool);
+      throw new Error(
+        "ModalController received non-modal tool Interaction type",
+      );
     }
 
     this.tool = tool;

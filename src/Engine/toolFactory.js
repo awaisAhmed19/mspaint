@@ -10,6 +10,7 @@ import { EllipseTool, EllipseRenderer } from "../Tools/ellipse.js";
 import { FloodFillTool, FloodFillRenderer } from "../Tools/floodfill.js";
 import { EyedropTool, EyedropRenderer } from "../Tools/eyedrop.js";
 import { CurveLineTool, CurveLineRenderer } from "../Tools/curveline.js";
+import { LassoTool, LassoRenderer } from "../Tools/lasso.js";
 import { InteractionType } from "./Interaction/ToolInteraction";
 
 export const TOOLS = {
@@ -97,6 +98,14 @@ export const TOOLS = {
     },
   },
 
+  LASSO: {
+    name: "Lasso",
+    interaction: InteractionType.MODAL,
+
+    options: {
+      variant: {},
+    },
+  },
   POLYGON: {
     name: "Polygon",
     interaction: InteractionType.STROKE,
@@ -155,6 +164,11 @@ export function createTool(toolKey, canvas) {
         renderer: new EraserRenderer(canvas),
       };
 
+    case "LASSO":
+      return {
+        tool: new LassoTool(meta),
+        renderer: new LassoRenderer(canvas),
+      };
     case "RECT":
       return {
         tool: new RectTool(meta),

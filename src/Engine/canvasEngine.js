@@ -15,5 +15,5 @@ export function createCanvasEngine(canvas) {
     ctx.putImageData(imageData, 0, 0);
   }
 
-  return { setPixel, commit };
+  return { setPixel, commit, ctx };
 }
