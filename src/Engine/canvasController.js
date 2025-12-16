@@ -1,48 +1,63 @@
+import StrokeController from "./strokeController";
+import ModalController from "./modalController";
+import { InteractionType } from "./Interaction/ToolInteraction";
+
 export default class CanvasController {
-  constructor(tool, renderer, engine, getState) {
-    this.tool = tool;
-    this.renderer = renderer;
+  constructor(engine, renderer, getState) {
     this.engine = engine;
+    this.renderer = renderer;
     this.getState = getState;
 
-    this.isDrawing = false;
-    this.prevPos = null;
+    this.activeTool = null;
+    this.activeController = null;
   }
 
-  buildCtx(pos) {
-    const state = this.getState();
+  setTool(tool) {
+    // Reset previous controller cleanly
+    this.activeController?.cancel?.();
 
-    return {
-      pos,
-      prevPos: this.prevPos,
-      color: state.color,
-      size: state.size,
-      type: state.type,
-      renderer: this.renderer,
-      engine: this.engine,
-      setColor: state.setColor,
-    };
+    this.activeTool = tool;
+    this.activeController = this.createController(tool);
   }
+
+  createController(tool) {
+    switch (tool.interaction) {
+      case InteractionType.STROKE:
+        return new StrokeController(
+          tool,
+          this.renderer,
+          this.engine,
+          this.getState,
+        );
+
+      case InteractionType.MODAL:
+        return new ModalController(
+          tool,
+          this.renderer,
+          this.engine,
+          this.getState,
+        );
+
+      default:
+        throw new Error("Unknown tool interaction type");
+    }
+  }
+
+  /* -------- event forwarding -------- */
 
   pointerDown(pos) {
-    this.isDrawing = true;
-    this.prevPos = pos;
-
-    this.tool.begin(this.buildCtx(pos));
+    this.activeController?.pointerDown(pos);
   }
 
   pointerMove(pos) {
-    if (!this.isDrawing) return;
-
-    this.tool.update(this.buildCtx(pos));
-    this.prevPos = pos;
+    this.activeController?.pointerMove(pos);
   }
 
   pointerUp(pos) {
-    if (!this.isDrawing) return;
+    this.activeController?.pointerUp?.(pos);
+  }
 
-    this.tool.end(this.buildCtx(pos));
-    this.isDrawing = false;
-    this.prevPos = null;
+  keyDown(key) {
+    this.activeController?.keyDown?.(key);
   }
 }
