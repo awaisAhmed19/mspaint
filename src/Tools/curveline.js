@@ -38,7 +38,9 @@ export class CurveLineTool {
     if (this.isEditing && this.hasStart && this.didDrag) {
       if (ctx.renderer.hitAnyControlPoint(ctx.pos)) {
         console.log("[CurveTool] CP selected");
-      } //todo: only commits after one control point is dragged ....needs to commit after both the control points are dragged and 3rd click is made out side the hitrange of the control point inidating commit
+      }
+      //todo: only commits after one control point is dragged ...
+      //.needs to commit after both the control points are dragged and 3rd click is made out side the hitrange of the control point inidating commit
       this.commit(ctx);
     }
   }

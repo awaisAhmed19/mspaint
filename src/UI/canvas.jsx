@@ -1,18 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { createCanvasEngine } from "../Engine/canvasEngine.js";
+import { createCanvasEngine } from "../Engine/canvasEngine";
 import CanvasController from "../Engine/canvasController";
-import { PencilTool, PencilRenderer } from "../Tools/pencil.js";
-import { EraserTool, EraserRenderer } from "../Tools/eraser.js";
-import { BrushTool, BrushRenderer } from "../Tools/brush.js";
-import { AirBrushTool, AirBrushRenderer } from "../Tools/airbrush.js";
-import { LineTool, LineRenderer } from "../Tools/line.js";
-import { RectTool, RectRenderer } from "../Tools/rectangle.js";
-import { PolygonTool, PolygonRenderer } from "../Tools/polygon.js";
-import { RectEllipseTool, RectEllipseRenderer } from "../Tools/rectellipse.js";
-import { EllipseTool, EllipseRenderer } from "../Tools/ellipse.js";
-import { FloodFillTool, FloodFillRenderer } from "../Tools/floodfill.js";
-import { EyedropTool, EyedropRenderer } from "../Tools/eyedrop.js";
-import { CurveLineTool, CurveLineRenderer } from "../Tools/curveline.js";
+import { createTool, TOOLS } from "../Engine/toolFactory";
 
 function getPos(e, canvas) {
   const rect = canvas.getBoundingClientRect();
@@ -21,68 +10,71 @@ function getPos(e, canvas) {
     y: e.clientY - rect.top,
   };
 }
-export default function CanvasHarness() {
+
+export default function Canvas() {
   const canvasRef = useRef(null);
   const controllerRef = useRef(null);
 
+  /* ---------- UI STATE ---------- */
   const [color, setColor] = useState("blue");
   const [size, setSize] = useState(1);
-  const [type, setType] = useState(2);
+  const [type, setType] = useState(2); // tool option
+  const [currentTool, setCurrentTool] = useState("PENCIL");
+  console.log("this tool is ", TOOLS[currentTool]);
+  /* ---------- LIVE STATE BRIDGE ---------- */
+  const stateRef = useRef({});
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-
-    // one-time clear
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    const engine = createCanvasEngine(canvas);
-    const renderer = new CurveLineRenderer(canvas);
-    const tool = new CurveLineTool();
-
-    const getState = () => ({
+    stateRef.current = {
       color,
       size,
       type,
       setColor,
-    });
+    };
+  }, [color, size, type]);
 
-    controllerRef.current = new CanvasController(engine, renderer, getState);
+  /* ---------- ENGINE INIT (ONCE) ---------- */
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
 
-    controllerRef.current.setTool(tool);
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    console.group("Canvas Config Test");
-    console.log("Tool:", tool.constructor.name);
-    console.log("Renderer:", renderer.constructor.name);
-    console.log("State:", getState());
-    console.log("Controller OK:", !!controllerRef.current);
-    console.groupEnd();
+    const engine = createCanvasEngine(canvas);
+    const getState = () => stateRef.current;
+
+    controllerRef.current = new CanvasController(engine, null, getState);
   }, []);
 
-  function handlePointerDown(e) {
-    const canvas = canvasRef.current;
-    controllerRef.current?.pointerDown(getPos(e, canvas));
-  }
+  /* ---------- TOOL SWITCHING ---------- */
+  useEffect(() => {
+    if (!controllerRef.current) return;
 
-  function handlePointerMove(e) {
     const canvas = canvasRef.current;
-    controllerRef.current?.pointerMove(getPos(e, canvas));
-  }
+    const { tool, renderer } = createTool(currentTool, canvas);
 
-  function handlePointerUp(e) {
-    const canvas = canvasRef.current;
-    controllerRef.current?.pointerUp(getPos(e, canvas));
-  }
+    controllerRef.current.setRenderer(renderer);
+    controllerRef.current.setTool(tool);
 
+    console.log("Tool switched →", currentTool);
+  }, [currentTool]);
+
+  /* ---------- EVENTS ---------- */
   return (
     <canvas
       ref={canvasRef}
       width={500}
       height={400}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
+      onPointerDown={(e) =>
+        controllerRef.current?.pointerDown(getPos(e, canvasRef.current))
+      }
+      onPointerMove={(e) =>
+        controllerRef.current?.pointerMove(getPos(e, canvasRef.current))
+      }
+      onPointerUp={(e) =>
+        controllerRef.current?.pointerUp(getPos(e, canvasRef.current))
+      }
     />
   );
 }

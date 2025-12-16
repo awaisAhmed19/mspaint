@@ -1,7 +1,7 @@
-import CanvasHarness from "./UI/canvas";
+import Canvas from "./UI/canvas";
 
 function App() {
-  return <CanvasHarness />;
+  return <Canvas />;
 }
 
 export default App;

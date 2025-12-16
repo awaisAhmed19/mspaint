@@ -1,4 +1,7 @@
 export class EyedropTool {
+  constructor(meta) {
+    this.meta = meta;
+  }
   begin(ctx) {
     const picked = ctx.renderer.pick(ctx.pos);
     console.log("Color:", picked);

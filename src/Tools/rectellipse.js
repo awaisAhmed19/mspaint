@@ -1,4 +1,7 @@
 export class RectEllipseTool {
+  constructor(meta) {
+    this.meta = meta;
+  }
   begin(ctx) {
     ctx.renderer.beginStroke(ctx.pos, ctx.color, ctx.type);
   }

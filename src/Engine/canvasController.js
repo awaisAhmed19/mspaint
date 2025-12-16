@@ -13,15 +13,32 @@ export default class CanvasController {
   }
 
   setTool(tool) {
-    // Reset previous controller cleanly
-    this.activeController?.cancel?.();
+    console.log(tool, "tools: ", tool.meta.interaction);
+    if (!tool || !tool.meta.interaction) {
+      throw new Error("Invalid tool instance passed to CanvasController");
+    }
 
+    this.activeController?.cancel?.();
     this.activeTool = tool;
     this.activeController = this.createController(tool);
   }
 
+  setRenderer(renderer) {
+    if (this.renderer === renderer) return;
+
+    // cancel current interaction cleanly
+    this.activeController?.cancel?.();
+
+    this.renderer = renderer;
+
+    // re-create controller with same tool
+    if (this.activeTool) {
+      this.activeController = this.createController(this.activeTool);
+    }
+  }
+
   createController(tool) {
-    switch (tool.interaction) {
+    switch (tool.meta.interaction) {
       case InteractionType.STROKE:
         return new StrokeController(
           tool,
