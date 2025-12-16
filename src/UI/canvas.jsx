@@ -31,8 +31,9 @@ export default function CanvasHarness() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
 
+    // one-time clear
+    const ctx = canvas.getContext("2d");
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -47,19 +48,17 @@ export default function CanvasHarness() {
       setColor,
     });
 
-    controllerRef.current = new CanvasController(
-      tool,
-      renderer,
-      engine,
-      getState,
-    );
+    controllerRef.current = new CanvasController(engine, renderer, getState);
+
+    controllerRef.current.setTool(tool);
+
     console.group("Canvas Config Test");
     console.log("Tool:", tool.constructor.name);
     console.log("Renderer:", renderer.constructor.name);
     console.log("State:", getState());
     console.log("Controller OK:", !!controllerRef.current);
     console.groupEnd();
-  }, [color, size, type]);
+  }, []);
 
   function handlePointerDown(e) {
     const canvas = canvasRef.current;
