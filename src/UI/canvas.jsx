@@ -12,6 +12,7 @@ import { RectEllipseTool, RectEllipseRenderer } from "../Tools/rectellipse.js";
 import { EllipseTool, EllipseRenderer } from "../Tools/ellipse.js";
 import { FloodFillTool, FloodFillRenderer } from "../Tools/floodfill.js";
 import { EyedropTool, EyedropRenderer } from "../Tools/eyedrop.js";
+import { CurveLineTool, CurveLineRenderer } from "../Tools/curveline.js";
 
 function getPos(e, canvas) {
   const rect = canvas.getBoundingClientRect();
@@ -24,7 +25,7 @@ export default function CanvasHarness() {
   const canvasRef = useRef(null);
   const controllerRef = useRef(null);
 
-  const [color, setColor] = useState("blue"); // 👈 FIX
+  const [color, setColor] = useState("blue");
   const [size, setSize] = useState(1);
   const [type, setType] = useState(2);
 
@@ -32,14 +33,12 @@ export default function CanvasHarness() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
-    // 1️⃣ real background
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 2️⃣ engine + tools
     const engine = createCanvasEngine(canvas);
-    const renderer = new EyedropRenderer(canvas);
-    const tool = new EyedropTool();
+    const renderer = new CurveLineRenderer(canvas);
+    const tool = new CurveLineTool();
 
     const getState = () => ({
       color,
