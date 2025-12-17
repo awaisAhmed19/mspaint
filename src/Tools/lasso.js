@@ -12,9 +12,9 @@ export class LassoTool {
   }
 
   update(ctx) {
-    console.log("[LassoTool] update", {
-      pos: ctx.pos,
-    });
+    // console.log("[LassoTool] update", {
+    //   pos: ctx.pos,
+    // });
     ctx.renderer.update(ctx.pos);
   }
 
@@ -29,234 +29,249 @@ export class LassoRenderer {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
+    //TODO: remove the artifacts of the selection buffer
+    // --- lasso UI buffer ---
+    this.lassoCanvas = document.createElement("canvas");
+    this.lassoCtx = this.lassoCanvas.getContext("2d");
 
-    this.bufferCanvas = document.createElement("canvas");
-    this.bufferCtx = this.bufferCanvas.getContext("2d");
+    // --- drag UI buffer ---
+    this.dragCanvas = document.createElement("canvas");
+    this.dragCtx = this.dragCanvas.getContext("2d");
 
-    this.bufferCanvas.width = canvas.width;
-    this.bufferCanvas.height = canvas.height;
+    [this.lassoCanvas, this.dragCanvas].forEach((c) => {
+      c.width = canvas.width;
+      c.height = canvas.height;
+    });
+
+    this.MODE_IDLE = 0;
+    this.MODE_DRAWING = 1;
+    this.MODE_DRAGGING = 2;
+    this.lassoCtx.setLineDash([4, 4]);
+    this.lassoCtx.strokeStyle = "rgba(255,0,0,0.8)";
+    this.lassoCtx.lineWidth = 1;
 
     this.padding = 10;
-
-    console.log("[LassoRenderer] constructed", {
-      width: canvas.width,
-      height: canvas.height,
-    });
-
-    this.resetState();
+    this.reset();
   }
 
-  /* ---------- unified lifecycle ---------- */
+  /* ---------------- state ---------------- */
+
+  reset() {
+    this.mode = this.MODE_IDLE; // idle | lasso | drag
+    this.polygon = [];
+    this.selectedBlob = null;
+
+    this.isDragging = false;
+    this.clearBuffers();
+  }
+
+  clearBuffers() {
+    this.lassoCtx.clearRect(
+      0,
+      0,
+      this.lassoCanvas.width,
+      this.lassoCanvas.height,
+    );
+    this.dragCtx.clearRect(0, 0, this.dragCanvas.width, this.dragCanvas.height);
+  }
+
+  /* ---------------- lifecycle ---------------- */
 
   begin(pos) {
-    console.log("[LassoRenderer] begin", {
-      pos,
-      isSelected: this.isSelected,
-      isDragging: this.isDragging,
-    });
-
-    if (this.isSelected && this.isPointInsideSelection(pos)) {
-      console.log("[LassoRenderer] → startDragging");
-      this.startDragging(pos);
+    if (this.mode === this.MODE_DRAGGING && this.isPointInsideSelection(pos)) {
+      this.startDrag(pos);
     } else {
-      console.log("[LassoRenderer] → startLasso");
-      this.clearSelection();
       this.startLasso(pos);
     }
   }
 
   update(pos) {
-    console.log("[LassoRenderer] update", {
-      pos,
-      isDrawing: this.isDrawing,
-      isDragging: this.isDragging,
-      polygonSize: this.polygon.length,
-    });
-
-    if (this.isDragging) {
-      this.dragging(pos);
-    } else if (this.isDrawing) {
+    if (this.mode === this.MODE_DRAWING) {
       this.drawLasso(pos);
     }
-  }
 
-  end(pos) {
-    console.log("[LassoRenderer] end", {
-      pos,
-      isDrawing: this.isDrawing,
-      isDragging: this.isDragging,
-    });
-
-    if (this.isDragging) {
-      this.stopDragging();
-    } else if (this.isDrawing) {
-      this.stopLasso(pos);
+    if (this.mode === this.MODE_DRAGGING && this.isDragging) {
+      this.drag(pos);
     }
   }
 
-  /* ---------- state ---------- */
-
-  resetState() {
-    console.log("[LassoRenderer] resetState");
-
-    this.isDrawing = false;
-    this.isDragging = false;
-    this.isSelected = false;
-
-    this.polygon = [];
-    this.start = null;
-    this.selectedBlob = null;
-
-    this.bufferCtx.clearRect(
-      0,
-      0,
-      this.bufferCanvas.width,
-      this.bufferCanvas.height,
-    );
-  }
-
-  clearSelection() {
-    console.log("[LassoRenderer] clearSelection");
-    this.isSelected = false;
-    this.selectedBlob = null;
-  }
-
-  /* ---------- lasso drawing ---------- */
-
-  startLasso(pos) {
-    console.log("[LassoRenderer] startLasso", pos);
-
-    this.isDrawing = true;
-    this.polygon = [pos];
-    this.start = pos;
-
-    this.bufferCtx.clearRect(
-      0,
-      0,
-      this.bufferCanvas.width,
-      this.bufferCanvas.height,
-    );
-
-    this.bufferCtx.beginPath();
-    this.bufferCtx.moveTo(pos.x, pos.y);
-  }
-
-  drawLasso(pos) {
-    const last = this.polygon[this.polygon.length - 1];
-    const dist = last ? Math.hypot(pos.x - last.x, pos.y - last.y) : 0;
-
-    if (!last || dist > 2) {
-      this.polygon.push(pos);
-      this.bufferCtx.lineTo(pos.x, pos.y);
-      this.bufferCtx.stroke();
-
-      console.log("[LassoRenderer] drawLasso", {
-        pos,
-        polygonSize: this.polygon.length,
-        dist,
-      });
-    }
-  }
-
-  stopLasso() {
-    console.log("[LassoRenderer] stopLasso", {
-      polygonSize: this.polygon.length,
-    });
-
-    if (this.polygon.length < 3) {
-      console.warn("[LassoRenderer] polygon too small, reset");
-      this.resetState();
+  end() {
+    if (this.mode === this.MODE_DRAWING) {
+      this.commitSelection();
       return;
     }
 
-    this.isDrawing = false;
-    this.isSelected = true;
+    if (this.mode === this.MODE_DRAGGING && this.isDragging) {
+      this.commitDrag();
+    }
+  }
 
-    this.bufferCtx.closePath();
-    this.bufferCtx.stroke();
+  /* ---------------- lasso ---------------- */
+
+  startLasso(pos) {
+    this.reset();
+    this.mode = this.MODE_DRAWING;
+    this.polygon = [pos];
+
+    this.lassoCtx.beginPath();
+    this.lassoCtx.moveTo(pos.x, pos.y);
+  }
+
+  drawLasso(pos) {
+    const last = this.polygon.at(-1);
+    if (!last || Math.hypot(pos.x - last.x, pos.y - last.y) > 2) {
+      this.polygon.push(pos);
+      this.lassoCtx.lineTo(pos.x, pos.y);
+      this.lassoCtx.stroke();
+
+      this.redraw();
+    }
+  }
+
+  /* ---------------- selection cut ---------------- */
+
+  commitSelection() {
+    if (this.polygon.length < 3) {
+      this.reset();
+      return;
+    }
 
     const box = this.boundingBox();
-    if (!box) return;
-
-    console.log("[LassoRenderer] selection bounding box", box);
-
     const { x, y, w, h } = box;
 
+    // Grab the original image data from the main canvas
+    const src = this.ctx.getImageData(x, y, w, h);
+
+    // Create a new offscreen canvas for the selected blob (initially transparent)
     const off = document.createElement("canvas");
     off.width = w;
     off.height = h;
     const offCtx = off.getContext("2d");
 
-    offCtx.beginPath();
-    this.polygon.forEach((p, i) => {
-      const px = p.x - x;
-      const py = p.y - y;
-      i === 0 ? offCtx.moveTo(px, py) : offCtx.lineTo(px, py);
-    });
-    offCtx.closePath();
-    offCtx.clip();
+    // Create ImageData for the selected pixels only
+    const selectedData = offCtx.createImageData(w, h);
 
-    offCtx.drawImage(this.canvas, x, y, w, h, 0, 0, w, h);
+    // Copy only pixels inside the polygon to selectedData
+    for (let py = 0; py < h; py++) {
+      for (let px = 0; px < w; px++) {
+        const gx = x + px;
+        const gy = y + py;
 
-    this.ctx.save();
-    this.ctx.beginPath();
-    this.polygon.forEach((p, i) => {
-      i === 0 ? this.ctx.moveTo(p.x, p.y) : this.ctx.lineTo(p.x, p.y);
-    });
-    this.ctx.closePath();
-    this.ctx.clip();
-    this.ctx.clearRect(x, y, w, h);
-    this.ctx.restore();
+        if (this.pointInPolygon(gx, gy, this.polygon)) {
+          const i = (py * w + px) * 4;
+          selectedData.data.set(src.data.slice(i, i + 4), i);
+        } else {
+          // Explicitly set non-selected pixels to fully transparent
+          const i = (py * w + px) * 4;
+          selectedData.data[i + 3] = 0; // alpha = 0
+        }
+      }
+    }
 
+    // Put the masked selection onto the offscreen canvas
+    offCtx.putImageData(selectedData, 0, 0);
+
+    // Now erase ONLY the selected pixels from the main canvas
+    // (by drawing the original but with selected pixels made transparent)
+    const maskData = src.data.slice(); // copy original
+    for (let py = 0; py < h; py++) {
+      for (let px = 0; px < w; px++) {
+        const gx = x + px;
+        const gy = y + py;
+        if (this.pointInPolygon(gx, gy, this.polygon)) {
+          const i = (py * w + px) * 4;
+          maskData[i + 3] = 0; // make selected pixels transparent
+        }
+      }
+    }
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = w;
+    tempCanvas.height = h;
+    tempCanvas
+      .getContext("2d")
+      .putImageData(new ImageData(maskData, w, h), 0, 0);
+    this.ctx.drawImage(tempCanvas, x, y);
+
+    // Store the selected blob (now with transparent background)
     this.selectedBlob = { canvas: off, x, y, w, h };
+    this.mode = this.MODE_DRAGGING;
 
-    console.log("[LassoRenderer] selection created", this.selectedBlob);
+    // Clear lasso UI and draw initial drag position
+    this.clearBuffers();
+    this.dragCtx.drawImage(off, x, y);
+    this.redraw();
   }
+  /* ---------------- dragging ---------------- */
 
-  /* ---------- dragging ---------- */
-
-  isPointInsideSelection(pos) {
-    if (!this.selectedBlob) return false;
-    const b = this.selectedBlob;
-    return (
-      pos.x >= b.x && pos.x <= b.x + b.w && pos.y >= b.y && pos.y <= b.y + b.h
-    );
-  }
-
-  startDragging(pos) {
-    console.log("[LassoRenderer] startDragging", pos);
-
+  startDrag(pos) {
     this.isDragging = true;
+
     this.offsetX = pos.x - this.selectedBlob.x;
     this.offsetY = pos.y - this.selectedBlob.y;
-  }
 
-  dragging(pos) {
+    // draw initial drag frame immediately
+    this.drag(pos);
+  }
+  drag(pos) {
     this.selectedBlob.x = pos.x - this.offsetX;
     this.selectedBlob.y = pos.y - this.offsetY;
 
-    console.log("[LassoRenderer] dragging", {
-      pos,
-      blobX: this.selectedBlob.x,
-      blobY: this.selectedBlob.y,
-    });
+    this.dragCtx.clearRect(0, 0, this.dragCanvas.width, this.dragCanvas.height);
+    this.lassoCtx.clearRect(
+      0,
+      0,
+      this.lassoCanvas.width,
+      this.lassoCanvas.height,
+    );
+    this.dragCtx.drawImage(
+      this.selectedBlob.canvas,
+      this.selectedBlob.x,
+      this.selectedBlob.y,
+    );
 
-    this.renderOverlay();
+    this.redraw();
   }
 
-  stopDragging() {
-    console.log("[LassoRenderer] stopDragging", this.selectedBlob);
-
-    this.isDragging = false;
-
+  commitDrag() {
     this.ctx.drawImage(
       this.selectedBlob.canvas,
       this.selectedBlob.x,
       this.selectedBlob.y,
     );
+
+    this.isDragging = false;
+    this.reset();
+    this.redraw();
+    this.clearBuffers(); // ensures no leftover UI after commit
   }
 
-  /* ---------- helpers ---------- */
+  /* ---------------- rendering ---------------- */
+  redraw() {
+    // Save the current main canvas state
+    const mainImageData = this.ctx.getImageData(
+      0,
+      0,
+      this.canvas.width,
+      this.canvas.height,
+    );
+
+    // Clear main canvas temporarily
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // Redraw the clean main content (will be restored later)
+    // But we don't need to — we'll restore from saved data
+
+    // Draw UI overlays
+    this.ctx.drawImage(this.lassoCanvas, 0, 0);
+    this.ctx.drawImage(this.dragCanvas, 0, 0);
+
+    // Restore the clean main content on top? No — wrong order.
+
+    // CORRECT ORDER: content first, then overlays
+    this.ctx.putImageData(mainImageData, 0, 0); // restore clean content
+    this.ctx.drawImage(this.lassoCanvas, 0, 0); // lasso on top
+    this.ctx.drawImage(this.dragCanvas, 0, 0); // drag preview on top
+  } /* ---------------- geometry ---------------- */
 
   boundingBox() {
     const xs = this.polygon.map((p) => p.x);
@@ -267,25 +282,29 @@ export class LassoRenderer {
     const maxX = Math.max(...xs) + this.padding;
     const maxY = Math.max(...ys) + this.padding;
 
-    return {
-      x: minX,
-      y: minY,
-      w: maxX - minX,
-      h: maxY - minY,
-    };
+    return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
   }
 
-  renderOverlay() {
-    this.bufferCtx.clearRect(
-      0,
-      0,
-      this.bufferCanvas.width,
-      this.bufferCanvas.height,
-    );
+  pointInPolygon(x, y, poly) {
+    let inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const xi = poly[i].x,
+        yi = poly[i].y;
+      const xj = poly[j].x,
+        yj = poly[j].y;
 
-    if (this.isSelected && this.selectedBlob) {
-      const b = this.selectedBlob;
-      this.bufferCtx.drawImage(b.canvas, b.x, b.y);
+      const hit =
+        yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+
+      if (hit) inside = !inside;
     }
+    return inside;
+  }
+
+  isPointInsideSelection(pos) {
+    const b = this.selectedBlob;
+    return (
+      pos.x >= b.x && pos.x <= b.x + b.w && pos.y >= b.y && pos.y <= b.y + b.h
+    );
   }
 }

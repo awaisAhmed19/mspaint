@@ -11,6 +11,9 @@ import { FloodFillTool, FloodFillRenderer } from "../Tools/floodfill.js";
 import { EyedropTool, EyedropRenderer } from "../Tools/eyedrop.js";
 import { CurveLineTool, CurveLineRenderer } from "../Tools/curveline.js";
 import { LassoTool, LassoRenderer } from "../Tools/lasso.js";
+import { RectLassoTool, RectLassoRenderer } from "../Tools/rectlasso.js";
+import { TextTool, TextRenderer } from "../Tools/text.js";
+import { MagnificationTool, MagnificationRenderer } from "../Tools/magnify.js";
 import { InteractionType } from "./Interaction/ToolInteraction";
 
 export const TOOLS = {
@@ -106,6 +109,14 @@ export const TOOLS = {
       variant: {},
     },
   },
+  RECTLASSO: {
+    name: "RectLasso",
+    interaction: InteractionType.MODAL,
+
+    options: {
+      variant: {},
+    },
+  },
   POLYGON: {
     name: "Polygon",
     interaction: InteractionType.STROKE,
@@ -126,8 +137,18 @@ export const TOOLS = {
     options: {},
   },
 
+  TEXT: {
+    name: "Text",
+    interaction: InteractionType.MODAL,
+    options: {},
+  },
   EYEDROP: {
     name: "Eyedropper",
+    interaction: InteractionType.STROKE,
+    options: {},
+  },
+  MAGNIFY: {
+    name: "Magnification",
     interaction: InteractionType.STROKE,
     options: {},
   },
@@ -164,10 +185,20 @@ export function createTool(toolKey, canvas) {
         renderer: new EraserRenderer(canvas),
       };
 
+    case "MAGNIFY":
+      return {
+        tool: new MagnificationTool(meta),
+        renderer: new MagnificationRenderer(canvas),
+      };
     case "LASSO":
       return {
         tool: new LassoTool(meta),
         renderer: new LassoRenderer(canvas),
+      };
+    case "RECTLASSO":
+      return {
+        tool: new RectLassoTool(meta),
+        renderer: new RectLassoRenderer(canvas),
       };
     case "RECT":
       return {
@@ -175,6 +206,11 @@ export function createTool(toolKey, canvas) {
         renderer: new RectRenderer(canvas),
       };
 
+    case "TEXT":
+      return {
+        tool: new TextTool(meta),
+        renderer: new TextRenderer(canvas),
+      };
     case "ELLIPSE":
       return {
         tool: new EllipseTool(meta),

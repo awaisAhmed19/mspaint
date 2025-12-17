@@ -24,12 +24,13 @@ function testDrawRectangle(engine) {
 export default function Canvas() {
   const canvasRef = useRef(null);
   const controllerRef = useRef(null);
+  const overlayRef = useRef(null);
 
   /* ---------- UI STATE ---------- */
   const [color, setColor] = useState("blue");
   const [size, setSize] = useState(1);
   const [type, setType] = useState(2); // tool option
-  const [currentTool, setCurrentTool] = useState("LASSO");
+  const [currentTool, setCurrentTool] = useState("MAGNIFY");
   console.log("this tool is ", TOOLS[currentTool]);
   /* ---------- LIVE STATE BRIDGE ---------- */
   const stateRef = useRef({});
@@ -48,7 +49,7 @@ export default function Canvas() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const engine = createCanvasEngine(canvas);
@@ -73,19 +74,40 @@ export default function Canvas() {
 
   /* ---------- EVENTS ---------- */
   return (
-    <canvas
-      ref={canvasRef}
-      width={500}
-      height={400}
-      onPointerDown={(e) =>
-        controllerRef.current?.pointerDown(getPos(e, canvasRef.current))
-      }
-      onPointerMove={(e) =>
-        controllerRef.current?.pointerMove(getPos(e, canvasRef.current))
-      }
-      onPointerUp={(e) =>
-        controllerRef.current?.pointerUp(getPos(e, canvasRef.current))
-      }
-    />
+    <>
+      <div
+        style={{
+          position: "relative",
+          width: 500,
+          height: 400,
+        }}
+      >
+        <canvas
+          ref={canvasRef}
+          width={500}
+          height={400}
+          style={{ display: "block" }}
+          onPointerDown={(e) =>
+            controllerRef.current?.pointerDown(getPos(e, canvasRef.current))
+          }
+          onPointerMove={(e) =>
+            controllerRef.current?.pointerMove(getPos(e, canvasRef.current))
+          }
+          onPointerUp={(e) =>
+            controllerRef.current?.pointerUp(getPos(e, canvasRef.current))
+          }
+        />
+
+        {/* 👇 TEXT TOOL (DOM UI) LIVES HERE */}
+        <div
+          ref={overlayRef}
+          style={{
+            position: "absolute",
+            inset: 0,
+            pointerEvents: "none",
+          }}
+        />
+      </div>
+    </>
   );
 }

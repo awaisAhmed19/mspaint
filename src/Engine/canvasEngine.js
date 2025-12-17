@@ -1,4 +1,4 @@
-export function createCanvasEngine(canvas) {
+export function createCanvasEngine(canvas, overlay) {
   const ctx = canvas.getContext("2d");
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
@@ -15,5 +15,10 @@ export function createCanvasEngine(canvas) {
     ctx.putImageData(imageData, 0, 0);
   }
 
-  return { setPixel, commit, ctx };
+  return {
+    setPixel,
+    commit,
+    ctx,
+    overlay, // 👈 NEW
+  };
 }
