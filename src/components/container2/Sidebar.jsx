@@ -1,19 +1,14 @@
 import React from "react";
-import AirBrush, { AirBrushOptions } from "./AirBrush.jsx";
-import Brush, { BrushOptions } from "./Brush.jsx";
-import CurveLine, { CurveLineOptions } from "./CurveLine.jsx";
-import Ellipse, { EllipseOptions } from "./Ellipse.jsx";
-import Eraser, { EraserOptions } from "./Eraser.jsx";
-import EyeDrop from "./EyeDrop.jsx";
-import FloodFill from "./FloodFill.jsx";
-import Lasso from "./Lasso.jsx";
-import RectLasso from "./RectLasso.jsx";
-import Line, { LineOptions } from "./Line.jsx";
-import Magnifications, { MagnificationOptions } from "./Magnification.jsx";
-import Pencil from "./Pencil.jsx";
-import PolygonShape, { PolygonOptions } from "./PolygonShape.jsx";
-import RectElipse, { RectElipseOptions } from "./RectElipse.jsx";
-import RectShape, { RectShapeOptions } from "./RectShape.jsx";
+import { AirBrushOptions } from "./AirBrush.jsx";
+import { BrushOptions } from "./Brush.jsx";
+import { CurveLineOptions } from "./CurveLine.jsx";
+import { EllipseOptions } from "./Ellipse.jsx";
+import { EraserOptions } from "./Eraser.jsx";
+import { LineOptions } from "./Line.jsx";
+import { MagnificationOptions } from "./Magnification.jsx";
+import { PolygonOptions } from "./PolygonShape.jsx";
+import { RectElipseOptions } from "./RectElipse.jsx";
+import { RectShapeOptions } from "./RectShape.jsx";
 class Sidebar extends React.Component {
   constructor(props) {
     super(props);

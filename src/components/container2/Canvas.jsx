@@ -32,8 +32,8 @@ export default class Canvas extends React.Component {
 
     /* ---------- state ---------- */
     this.state = {
-      width: 500,
-      height: 400,
+      width: 800,
+      height: 500,
       currentTool: "PENCIL",
       color: "blue",
       size: 1,
@@ -193,17 +193,17 @@ export default class Canvas extends React.Component {
 
           {/* resize handles */}
           <img
-            src="../../public/imgs/point.png"
+            src="../../imgs/point.png"
             className="resize-handle right"
             onMouseDown={this.startResize}
           />
           <img
-            src="../../public/imgs/point.png"
+            src="../../imgs/point.png"
             className="resize-handle bottom"
             onMouseDown={this.startResize}
           />
           <img
-            src="../../public/imgs/point.png"
+            src="../../imgs/point.png"
             className="resize-handle corner"
             onMouseDown={this.startResize}
           />
