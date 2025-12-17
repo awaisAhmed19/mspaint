@@ -1,92 +1,124 @@
 import React from "react";
-class Canvas extends React.Component {
+import { createCanvasEngine } from "./Engine/canvasEngine";
+import CanvasController from "./Engine/canvasController";
+import { createTool, TOOLS } from "./Engine/toolFactory";
+
+function getPos(e, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top,
+  };
+}
+
+export default class Canvas extends React.Component {
   constructor(props) {
     super(props);
-    this.Width = props.Dim.WIDTH;
-    this.Height = props.Dim.HEIGHT;
 
-    this.canvasContainerRef = React.createRef();
+    this.bufferCanvas = document.createElement("canvas");
+    this.bufferCtx = this.bufferCanvas.getContext("2d");
+    /* ---------- refs ---------- */
     this.canvasRef = React.createRef();
-    this.canvasBufferRef = React.createRef();
-    this.selectionRef = React.createRef();
-    this.pos = { x: 0, y: 0 };
+    this.canvasContainerRef = React.createRef();
+    this.overlayRef = React.createRef();
+
+    /* ---------- engine ---------- */
+    this.engine = null;
+    this.controller = null;
+
+    /* ---------- resize state ---------- */
     this.isResizing = false;
     this.currentHandle = null;
+
+    /* ---------- state ---------- */
+    this.state = {
+      width: 500,
+      height: 400,
+      currentTool: "PENCIL",
+      color: "blue",
+      size: 1,
+      type: 2,
+    };
+
+    this.stateRef = {
+      color: "blue",
+      size: 1,
+      type: 2,
+      setColor: (c) => this.setState({ color: c }),
+    };
   }
-  getMousePos = (targetCanvas, e) => {
-    const rect = targetCanvas.getBoundingClientRect();
 
-    const x = Math.floor(
-      (e.clientX - rect.left) * (targetCanvas.width / rect.width),
-    );
-    const y = Math.floor(
-      (e.clientY - rect.top) * (targetCanvas.height / rect.height),
-    );
-
-    return { x, y };
-  };
+  /* ---------- lifecycle ---------- */
 
   componentDidMount() {
-    this.ctx = this.canvasRef.current.getContext("2d");
-    this.buf = this.canvasBufferRef.current.getContext("2d");
-    this.sel = this.selectionRef.current.getContext("2d");
+    const canvas = this.canvasRef.current;
+    const ctx = canvas.getContext("2d");
 
-    this.canvasRef.current.width = this.Width;
-    this.canvasRef.current.height = this.Height;
+    canvas.width = this.state.width;
+    canvas.height = this.state.height;
 
-    this.canvasBufferRef.current.width = this.Width;
-    this.canvasBufferRef.current.height = this.Height;
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    this.selectionRef.current.width = this.Width;
-    this.selectionRef.current.height = this.Height;
+    this.engine = createCanvasEngine(canvas);
+    this.controller = new CanvasController(
+      this.engine,
+      null,
+      () => this.stateRef,
+    );
+
+    this.switchTool(this.state.currentTool);
 
     window.addEventListener("mousemove", this.resize);
     window.addEventListener("mouseup", this.stopResize);
-
-    this.canvasRef.current.addEventListener("mousemove", (e) => {
-      const pos = this.getMousePos(this.canvasRef.current, e);
-      this.props.coord(pos);
-    });
-    this.selectionRef.current.addEventListener("mousemove", (e) => {
-      const pos = this.getMousePos(this.selectionRef.current, e);
-      this.props.coord(pos);
-    });
-    this.canvasBufferRef.current.addEventListener("mousemove", (e) => {
-      const pos = this.getMousePos(this.canvasBufferRef.current, e);
-      this.props.coord(pos);
-    });
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.toolInstance && prevProps.toolConfig !== this.props.toolConfig) {
-      this.toolInstance.updateOptions(this.props.toolConfig);
-    }
-  }
   componentWillUnmount() {
     window.removeEventListener("mousemove", this.resize);
     window.removeEventListener("mouseup", this.stopResize);
   }
 
-  resizeCanvas = () => {
-    const canvas = this.canvasRef.current;
-    const buffer = this.canvasBufferRef.current;
-    const container = this.canvasContainerRef.current;
+  /* ---------- tool switching ---------- */
 
-    buffer.width = canvas.width;
-    buffer.height = canvas.height;
-    this.buf.drawImage(canvas, 0, 0);
+  switchTool(toolKey) {
+    if (!this.controller) return;
 
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientHeight;
-    this.props.dim(canvas);
-    this.ctx.drawImage(buffer, 0, 0);
+    const { tool, renderer } = createTool(toolKey, this.canvasRef.current);
+    this.controller.setRenderer(renderer);
+    this.controller.setTool(tool);
+
+    console.log("Tool switched →", toolKey, TOOLS[toolKey]);
+  }
+
+  /* ---------- pointer events ---------- */
+
+  handlePointerDown = (e) => {
+    this.controller?.pointerDown(getPos(e, this.canvasRef.current));
   };
+
+  handlePointerMove = (e) => {
+    this.controller?.pointerMove(getPos(e, this.canvasRef.current));
+  };
+
+  handlePointerUp = (e) => {
+    this.controller?.pointerUp(getPos(e, this.canvasRef.current));
+  };
+
+  /* ---------- resizing ---------- */
 
   startResize = (e) => {
+    e.preventDefault();
     this.isResizing = true;
     this.currentHandle = e.target;
-  };
 
+    const canvas = this.canvasRef.current;
+
+    // snapshot current drawing
+    this.bufferCanvas.width = canvas.width;
+    this.bufferCanvas.height = canvas.height;
+    this.bufferCtx.clearRect(0, 0, canvas.width, canvas.height);
+    this.bufferCtx.drawImage(canvas, 0, 0);
+  };
   resize = (e) => {
     if (!this.isResizing) return;
 
@@ -97,33 +129,46 @@ class Canvas extends React.Component {
     let h = container.clientHeight;
 
     if (this.currentHandle.classList.contains("right")) {
-      w = e.clientX - rect.left;
-      if (w < 100) w = 100;
-      container.style.width = `${w}px`;
+      w = Math.max(100, e.clientX - rect.left);
     }
 
     if (this.currentHandle.classList.contains("bottom")) {
-      h = e.clientY - rect.top;
-      if (h < 100) h = 100;
-      container.style.height = `${h}px`;
+      h = Math.max(100, e.clientY - rect.top);
     }
 
     if (this.currentHandle.classList.contains("corner")) {
-      w = e.clientX - rect.left;
-      h = e.clientY - rect.top;
-      if (w < 100) w = 100;
-      if (h < 100) h = 100;
-      container.style.width = `${w}px`;
-      container.style.height = `${h}px`;
+      w = Math.max(100, e.clientX - rect.left);
+      h = Math.max(100, e.clientY - rect.top);
     }
 
-    this.resizeCanvas();
+    container.style.width = `${w}px`;
+    container.style.height = `${h}px`;
+
+    this.resizeCanvas(w, h);
   };
 
   stopResize = () => {
     this.isResizing = false;
     this.currentHandle = null;
   };
+
+  resizeCanvas(w, h) {
+    const canvas = this.canvasRef.current;
+    const ctx = canvas.getContext("2d");
+
+    // resize clears canvas
+    canvas.width = w;
+    canvas.height = h;
+
+    // repaint background
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, w, h);
+
+    // restore previous drawing
+    ctx.drawImage(this.bufferCanvas, 0, 0);
+  }
+
+  /* ---------- render ---------- */
 
   render() {
     return (
@@ -132,41 +177,33 @@ class Canvas extends React.Component {
           className="canvascontainer"
           ref={this.canvasContainerRef}
           style={{
-            width: this.Width,
-            height: this.Height,
+            width: this.state.width,
+            height: this.state.height,
+            position: "relative",
           }}
         >
           <canvas
             ref={this.canvasRef}
-            onMouseLeave={this.props.clearCoords}
             className="canvas"
             style={{ width: "100%", height: "100%", background: "white" }}
+            onPointerDown={this.handlePointerDown}
+            onPointerMove={this.handlePointerMove}
+            onPointerUp={this.handlePointerUp}
           />
 
-          <canvas
-            ref={this.canvasBufferRef}
-            onMouseLeave={this.props.clearCoords}
-            style={{ display: "none" }}
-          ></canvas>
-
-          <canvas
-            ref={this.selectionRef}
-            onMouseLeave={this.props.clearCoords}
-            style={{ display: "none", zIndex: 99 }}
-          ></canvas>
-
+          {/* resize handles */}
           <img
-            src="../../imgs/point.png"
+            src="../../public/imgs/point.png"
             className="resize-handle right"
             onMouseDown={this.startResize}
           />
           <img
-            src="../../imgs/point.png"
+            src="../../public/imgs/point.png"
             className="resize-handle bottom"
             onMouseDown={this.startResize}
           />
           <img
-            src="../../imgs/point.png"
+            src="../../public/imgs/point.png"
             className="resize-handle corner"
             onMouseDown={this.startResize}
           />
@@ -175,5 +212,3 @@ class Canvas extends React.Component {
     );
   }
 }
-
-export default Canvas;

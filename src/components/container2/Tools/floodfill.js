@@ -1,46 +1,48 @@
-export default class FloodFill {
-  constructor(canvas, ctx, options = {}, manager) {
-    this.canvas = canvas;
-    this.ctx = ctx;
-    this.manager = manager;
-
-    this.currentColor = manager.getFillColor?.() || [0, 0, 0, 255];
-
-    this.cursorUrl = "/static/cursors/fill-bucket.png";
-    this.hotspotX = 15;
-    this.hotspotY = 15;
+export class FloodFillTool {
+  constructor(meta) {
+    this.meta = meta;
+  }
+  begin(ctx) {
+    ctx.renderer.beginStroke(ctx.pos, ctx.color);
   }
 
-  onActivate() {
-    this.canvas.style.cursor = `url(${this.cursorUrl}) ${this.hotspotX} ${this.hotspotY}, auto`;
+  update(ctx) {
+    ctx.renderer.drawTo(ctx.pos);
   }
 
-  onDeactivate() {
-    this.canvas.style.cursor = "default";
+  end(ctx) {
+    ctx.renderer.endStroke();
+  }
+}
+export class FloodFillRenderer {
+  constructor(canvas) {
+    this.ctx = canvas.getContext("2d", {
+      willReadFrequently: true,
+    });
+    this.color = null;
+    this.pos = null;
   }
 
-  onStart(e) {
-    const pos = this.manager.getMousePos(e);
+  beginStroke(pos, color) {
+    console.log("flood fill", pos);
+    this.pos = pos;
+    this.color = this.parseColor(color);
 
     this.floodFill(
-      Math.floor(pos.x),
-      Math.floor(pos.y),
-      this.currentColor,
+      Math.floor(this.pos.x),
+      Math.floor(this.pos.y),
+      this.color,
       10, // tolerance
     );
-
-    this.manager.logUndo?.("FloodFill");
-    this.manager.redraw?.();
   }
 
-  onDraw() {}
-  onStop() {}
-  renderOverlay() {}
-
-  // ───────────────────────────────────────────
-  // Flood Fill Implementation
-  // ───────────────────────────────────────────
-
+  parseColor(cssColor) {
+    const ctx = this.ctx;
+    ctx.fillStyle = cssColor;
+    ctx.fillRect(0, 0, 1, 1);
+    const data = ctx.getImageData(0, 0, 1, 1).data;
+    return [data[0], data[1], data[2], data[3]];
+  }
   floodFill(x, y, fillColor, range = 1) {
     const ctx = this.ctx;
     const imageData = ctx.getImageData(
@@ -108,8 +110,9 @@ export default class FloodFill {
     const da = a[3] - b[3];
     return dr * dr + dg * dg + db * db + da * da < rangeSq;
   }
+  drawTo() {}
 
-  setColor(rgba) {
-    this.currentColor = rgba;
+  endStroke() {
+    this.pos = null;
   }
 }
