@@ -5,6 +5,10 @@ import Canvas from "./components/container2/Canvas";
 import Pallete from "./components/container3/Pallete";
 import Footer from "./components/container4/Footer";
 
+const AppMode= {
+  DRAW:"DRAW",
+  EDIT:"EDIT",
+};
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -13,9 +17,17 @@ class App extends React.Component {
     this.canvasRef = React.createRef();
 
     this.state = {
+      mode:AppMode.DRAW,
       currTool: "pencil",
       currColor: "black",
-      toolConfig: {}, // ADD THIS
+      toolConfig: {
+        type:null,
+        options:{
+
+          size:null,
+        }
+
+      },
       defaultFooterMsg: "For Help, click Help Topics on the Help Menu",
     };
   }

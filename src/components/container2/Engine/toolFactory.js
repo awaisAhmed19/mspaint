@@ -173,6 +173,11 @@ export function createTool(toolKey, canvas) {
         renderer: new BrushRenderer(canvas),
       };
 
+    case "AIRBRUSH":
+      return {
+        tool: new AirBrushTool(meta),
+        renderer: new AirBrushRenderer(canvas),
+      };
     case "CURVE":
       return {
         tool: new CurveLineTool(meta),
@@ -206,6 +211,11 @@ export function createTool(toolKey, canvas) {
         renderer: new RectRenderer(canvas),
       };
 
+    case "RECTELLIPSE":
+      return {
+        tool: new RectEllipseTool(meta),
+        renderer: new RectEllipseRenderer(canvas),
+      };
     case "TEXT":
       return {
         tool: new TextTool(meta),

@@ -35,13 +35,13 @@ export default class Canvas extends React.Component {
       width: 800,
       height: 500,
       currentTool: "PENCIL",
-      color: "blue",
+      color: "black",
       size: 1,
       type: 2,
     };
 
     this.stateRef = {
-      color: "blue",
+      color: "black",
       size: 1,
       type: 2,
       setColor: (c) => this.setState({ color: c }),
