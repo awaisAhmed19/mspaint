@@ -20,22 +20,12 @@ export const TOOLS = {
   PENCIL: {
     name: "Pencil",
     interaction: InteractionType.STROKE,
-
-    options: {
-      size: {
-        type: "number",
-        default: 1,
-        min: 1,
-        max: 10,
-        step: 1,
-      },
-    },
+    options: {},
   },
 
   BRUSH: {
     name: "Brush",
     interaction: InteractionType.STROKE,
-
     options: {
       size: {
         type: "number",
@@ -46,39 +36,10 @@ export const TOOLS = {
       },
     },
   },
+
   CURVELINE: {
-    name: "Brush",
+    name: "Curve Line",
     interaction: InteractionType.STROKE,
-
-    options: {
-      size: {
-        type: "number",
-        default: 4,
-        min: 1,
-        max: 12,
-        step: 1,
-      },
-    },
-  },
-
-  AIRBRUSH: {
-    name: "Airbrush",
-    interaction: InteractionType.STROKE,
-
-    options: {
-      size: {
-        type: "number",
-        default: 4,
-        min: 1,
-        max: 12,
-        step: 1,
-      },
-    },
-  },
-  ERASER: {
-    name: "Eraser",
-    interaction: InteractionType.STROKE,
-
     options: {
       size: {
         type: "number",
@@ -90,84 +51,120 @@ export const TOOLS = {
     },
   },
 
+  AIRBRUSH: {
+    name: "Airbrush",
+    interaction: InteractionType.STROKE,
+    options: {
+      size: {
+        type: "number",
+        default: 2,
+        min: 1,
+        max: 3,
+        step: 1,
+      },
+    },
+  },
+
+  ERASER: {
+    name: "Eraser",
+    interaction: InteractionType.STROKE,
+    options: {
+      size: {
+        type: "number",
+        default: 3,
+        min: 3,
+        max: 12,
+        step: 3,
+      },
+    },
+  },
+
+  LINE: {
+    name: "Line",
+    interaction: InteractionType.STROKE,
+    options: {
+      size: {
+        type: "number",
+        default: 1,
+        min: 1,
+        max: 5,
+        step: 1,
+      },
+    },
+  },
+
   RECT: {
     name: "Rectangle",
     interaction: InteractionType.STROKE,
-
     options: {
       mode: {
         type: "enum",
-        default: "OUTLINE",
-        values: ["OUTLINE", "FILLED", "ROUNDED"],
+        default: 1,
+        values: [1, 2, 3], // border, filled-border, filled
       },
     },
   },
+
   RECTELLIPSE: {
-    name: "Rectangle",
+    name: "Rounded Rectangle",
     interaction: InteractionType.STROKE,
-
     options: {
       mode: {
         type: "enum",
-        default: "OUTLINE",
-        values: ["OUTLINE", "FILLED", "ROUNDED"],
+        default: 1,
+        values: [1, 2, 3],
       },
     },
   },
+
   ELLIPSE: {
     name: "Ellipse",
     interaction: InteractionType.STROKE,
-
     options: {
       mode: {
         type: "enum",
-        default: "OUTLINE",
-        values: ["OUTLINE", "FILLED", "ARC"],
+        default: 1,
+        values: [1, 2, 3],
       },
     },
   },
 
-  CURVE: {
-    name: "Curve",
-    interaction: InteractionType.MODAL,
-
+  POLYGON: {
+    name: "Polygon",
+    interaction: InteractionType.STROKE,
     options: {
-      variant: {
+      fillMode: {
         type: "enum",
-        default: "QUADRATIC",
-        values: ["QUADRATIC", "CUBIC"],
+        default: 1,
+        values: [1, 2, 3],
       },
     },
   },
+
+  MAGNIFY: {
+    name: "Magnification",
+    interaction: InteractionType.STROKE,
+    options: {
+      zoom: {
+        type: "number",
+        default: 1,
+        values: [1, 2, 6, 8],
+      },
+    },
+  },
+
+  /* ---------- TOOLS WITH NO JSX OPTIONS ---------- */
 
   LASSO: {
     name: "Lasso",
     interaction: InteractionType.MODAL,
-
-    options: {
-      variant: {},
-    },
+    options: {},
   },
+
   RECTLASSO: {
-    name: "RectLasso",
+    name: "Rectangular Lasso",
     interaction: InteractionType.MODAL,
-
-    options: {
-      variant: {},
-    },
-  },
-  POLYGON: {
-    name: "Polygon",
-    interaction: InteractionType.STROKE,
-
-    options: {
-      sides: {
-        type: "number",
-        default: 5,
-        min: 3,
-        max: 12,
-      },
-    },
+    options: {},
   },
 
   FLOOD: {
@@ -181,27 +178,16 @@ export const TOOLS = {
     interaction: InteractionType.MODAL,
     options: {},
   },
+
   EYEDROP: {
     name: "Eyedropper",
     interaction: InteractionType.STROKE,
     options: {},
   },
-  LINE: {
-    name: "Line",
-    interaction: InteractionType.STROKE,
-    options: {
-      size: {
-        type: "number",
-        default: 3,
-        min: 1,
-        max: 5,
-        step: 1,
-      },
-    },
-  },
-  MAGNIFY: {
-    name: "Magnification",
-    interaction: InteractionType.STROKE,
+
+  CURVE: {
+    name: "Curve",
+    interaction: InteractionType.MODAL,
     options: {},
   },
 };

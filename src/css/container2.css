@@ -337,19 +337,19 @@
 #polygonborder,
 #ellipseborder,
 #roundedrect-border {
-  background-position: -4px 4px;
+  background-position: -2px 4px;
 }
 #filledrectborder,
 #filledellipseborder,
 #filled-roundedrect-border,
 #filledpolygonborder {
-  background-position: -98px 4px;
+  background-position: -96px 4px;
 }
 #filledrect,
 #filledpolygon,
 #filled-roundedrect,
 #filledellipse {
-  background-position: -188px 4px;
+  background-position: -186px 4px;
 }
 
 #rectborder.pressed,
@@ -357,21 +357,21 @@
 #ellipseborder.pressed,
 #roundedrect-border.pressed {
   background-color: navy;
-  background-position: -51px 4px;
+  background-position: -48px 4px;
 }
 #filledrectborder.pressed,
 #filledellipseborder.pressed,
 #filled-roundedrect-border.pressed,
 #filledpolygonborder.pressed {
   background-color: navy;
-  background-position: -145px 4px;
+  background-position: -141px 4px;
 }
 #filledrect.pressed,
 #filledpolygon.pressed,
 #filled-roundedrect.pressed,
 #filledellipse.pressed {
   background-color: navy;
-  background-position: -188px 4px;
+  background-position: -185px 4px;
 }
 
 .CurvedLineOptions button,

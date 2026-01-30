@@ -6,8 +6,8 @@ import { createTool, TOOLS } from "./Engine/toolFactory";
 function getPos(e, canvas) {
   const rect = canvas.getBoundingClientRect();
   return {
-    x: e.clientX - rect.left,
-    y: e.clientY - rect.top,
+    x: Math.floor(e.clientX - rect.left),
+    y: Math.floor(e.clientY - rect.top),
   };
 }
 
@@ -15,18 +15,19 @@ export default class Canvas extends React.Component {
   constructor(props) {
     super(props);
 
-    this.bufferCanvas = document.createElement("canvas");
-    this.bufferCtx = this.bufferCanvas.getContext("2d");
     /* ---------- refs ---------- */
     this.canvasRef = React.createRef();
     this.canvasContainerRef = React.createRef();
     this.overlayRef = React.createRef();
+    /* ---------- buffers ---------- */
+    this.bufferCanvas = document.createElement("canvas");
+    this.bufferCtx = this.bufferCanvas.getContext("2d");
 
     /* ---------- engine ---------- */
     this.engine = null;
     this.controller = null;
 
-    /* ---------- resize state ---------- */
+    /* ---------- resize ---------- */
     this.isResizing = false;
     this.currentHandle = null;
 
@@ -34,21 +35,14 @@ export default class Canvas extends React.Component {
     this.state = {
       width: 800,
       height: 500,
-      currentTool: "PENCIL",
-      color: "black",
-      size: 1,
-      type: 2,
     };
 
     this.stateRef = {
       color: "black",
       size: 1,
       type: 2,
-      setColor: (c) => this.setState({ color: c }),
     };
   }
-
-  /* ---------- lifecycle ---------- */
 
   componentDidMount() {
     const canvas = this.canvasRef.current;
@@ -60,17 +54,24 @@ export default class Canvas extends React.Component {
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    this.engine = createCanvasEngine(canvas);
+    // ✅ overlay passed correctly
+    this.engine = createCanvasEngine(canvas, this.overlayRef.current);
+
     this.controller = new CanvasController(
       this.engine,
       null,
       () => this.stateRef,
     );
 
-    this.switchTool(this.state.currentTool);
+    this.switchTool(this.props.tool);
 
     window.addEventListener("mousemove", this.resize);
     window.addEventListener("mouseup", this.stopResize);
+
+    this.props.dim?.({
+      WIDTH: canvas.width,
+      HEIGHT: canvas.height,
+    });
   }
 
   componentDidUpdate(prevProps) {
@@ -83,15 +84,14 @@ export default class Canvas extends React.Component {
     }
 
     if (prevProps.toolConfig !== this.props.toolConfig) {
-      Object.assign(this.stateRef, this.props.toolConfig);
+      Object.assign(this.stateRef, this.props.toolConfig || {});
     }
   }
+
   componentWillUnmount() {
     window.removeEventListener("mousemove", this.resize);
     window.removeEventListener("mouseup", this.stopResize);
   }
-
-  /* ---------- tool switching ---------- */
 
   switchTool(toolKey) {
     if (!this.controller) return;
@@ -103,18 +103,23 @@ export default class Canvas extends React.Component {
     console.log("Tool switched →", toolKey, TOOLS[toolKey]);
   }
 
-  /* ---------- pointer events ---------- */
+  /* ---------- pointer ---------- */
 
   handlePointerDown = (e) => {
-    this.controller?.pointerDown(getPos(e, this.canvasRef.current));
+    const pos = getPos(e, this.canvasRef.current);
+    this.controller?.pointerDown(pos);
+    this.props.coord?.(pos);
   };
 
   handlePointerMove = (e) => {
-    this.controller?.pointerMove(getPos(e, this.canvasRef.current));
+    const pos = getPos(e, this.canvasRef.current);
+    this.controller?.pointerMove(pos);
+    this.props.coord?.(pos);
   };
 
-  handlePointerUp = (e) => {
-    this.controller?.pointerUp(getPos(e, this.canvasRef.current));
+  handlePointerUp = () => {
+    this.controller?.pointerUp();
+    this.props.clearCoord?.();
   };
 
   /* ---------- resizing ---------- */
@@ -125,13 +130,11 @@ export default class Canvas extends React.Component {
     this.currentHandle = e.target;
 
     const canvas = this.canvasRef.current;
-
-    // snapshot current drawing
     this.bufferCanvas.width = canvas.width;
     this.bufferCanvas.height = canvas.height;
-    this.bufferCtx.clearRect(0, 0, canvas.width, canvas.height);
     this.bufferCtx.drawImage(canvas, 0, 0);
   };
+
   resize = (e) => {
     if (!this.isResizing) return;
 
@@ -144,11 +147,9 @@ export default class Canvas extends React.Component {
     if (this.currentHandle.classList.contains("right")) {
       w = Math.max(100, e.clientX - rect.left);
     }
-
     if (this.currentHandle.classList.contains("bottom")) {
       h = Math.max(100, e.clientY - rect.top);
     }
-
     if (this.currentHandle.classList.contains("corner")) {
       w = Math.max(100, e.clientX - rect.left);
       h = Math.max(100, e.clientY - rect.top);
@@ -169,19 +170,15 @@ export default class Canvas extends React.Component {
     const canvas = this.canvasRef.current;
     const ctx = canvas.getContext("2d");
 
-    // resize clears canvas
     canvas.width = w;
     canvas.height = h;
 
-    // repaint background
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, w, h);
-
-    // restore previous drawing
     ctx.drawImage(this.bufferCanvas, 0, 0);
-  }
 
-  /* ---------- render ---------- */
+    this.props.dim?.({ WIDTH: w, HEIGHT: h });
+  }
 
   render() {
     return (
@@ -198,13 +195,23 @@ export default class Canvas extends React.Component {
           <canvas
             ref={this.canvasRef}
             className="canvas"
-            style={{ width: "100%", height: "100%", background: "white" }}
+            style={{ width: "100%", height: "100%" }}
             onPointerDown={this.handlePointerDown}
             onPointerMove={this.handlePointerMove}
             onPointerUp={this.handlePointerUp}
+            onPointerLeave={() => this.props.clearCoord?.()}
           />
 
-          {/* resize handles */}
+          <div
+            ref={this.overlayRef}
+            className="canvas-overlay"
+            style={{
+              position: "absolute",
+              inset: 0,
+              pointerEvents: "none", // 🔥 IMPORTANT
+            }}
+          />
+
           <img
             src="../../imgs/point.png"
             className="resize-handle right"

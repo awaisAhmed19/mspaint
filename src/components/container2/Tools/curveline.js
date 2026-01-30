@@ -1,115 +1,96 @@
 export class CurveLineTool {
   constructor(meta) {
     this.meta = meta;
+    this.resetState();
   }
 
-  // semantic state
-  hasStart = false;
-  isEditing = false;
-  didDrag = false;
+  resetState() {
+    this.phase = "IDLE"; // IDLE | PLACING_END | EDITING
+    this.draggedCP1 = false;
+    this.draggedCP2 = false;
+  }
 
-  /* ---------------- pointer down ---------------- */
+  /* ---------- pointer down ---------- */
 
   begin(ctx) {
-    console.log("[CurveTool] begin", {
-      hasStart: this.hasStart,
-      isEditing: this.isEditing,
-      pos: ctx.pos,
-    });
-
-    // 1️⃣ First click → place start
-    if (!this.hasStart) {
+    if (this.phase === "IDLE") {
       ctx.renderer.captureBase();
       ctx.renderer.setStart(ctx.pos, ctx.color, ctx.size);
-      this.hasStart = true;
+      this.phase = "PLACING_END";
       return;
     }
 
-    // 2️⃣ Second click → place end → enter edit mode
-    if (this.hasStart && !this.isEditing) {
+    if (this.phase === "PLACING_END") {
       ctx.renderer.setEnd(ctx.pos);
-      this.isEditing = true;
-      this.didDrag = false;
+      this.phase = "EDITING";
       return;
-    }
-
-    // 3️⃣ Editing mode → only selection intent
-    // No commit-on-click here (ambiguous)
-    if (this.isEditing && this.hasStart && this.didDrag) {
-      if (ctx.renderer.hitAnyControlPoint(ctx.pos)) {
-        console.log("[CurveTool] CP selected");
-      }
-      //todo: only commits after one control point is dragged ...
-      //.needs to commit after both the control points are dragged and 3rd click is made out side the hitrange of the control point inidating commit
-      this.commit(ctx);
     }
   }
 
-  /* ---------------- pointer move ---------------- */
+  /* ---------- pointer move ---------- */
 
   update(ctx) {
-    // Preview before end is fixed
-    if (this.hasStart && !this.isEditing) {
+    if (this.phase === "PLACING_END") {
       ctx.renderer.previewLine(ctx.pos);
       return;
     }
 
-    // Drag control points
-    if (this.isEditing) {
-      ctx.renderer.dragControlPoint(ctx.pos);
-      this.didDrag = true;
+    if (this.phase === "EDITING") {
+      const dragged = ctx.renderer.dragControlPoint(ctx.pos);
+      if (dragged === "cp1") this.draggedCP1 = true;
+      if (dragged === "cp2") this.draggedCP2 = true;
     }
   }
 
-  /* ---------------- pointer up ---------------- */
+  /* ---------- pointer up ---------- */
 
   end(ctx) {
-    if (!this.isEditing) return;
+    if (this.phase !== "EDITING") return;
+
     ctx.renderer.stopDrag();
+
+    if (this.draggedCP1 || this.draggedCP2) {
+      this.commit(ctx);
+    }
   }
 
-  /* ---------------- termination ---------------- */
+  /* ---------- finalize ---------- */
 
   commit(ctx) {
-    console.log("[CurveTool] commit");
-
-    this.resetState();
     ctx.renderer.commit();
+    this.resetState();
   }
 
   cancel(ctx) {
-    console.log("[CurveTool] cancel");
-
-    this.resetState();
     ctx.renderer.cancel();
-  }
-
-  /* ---------------- helpers ---------------- */
-
-  resetState() {
-    this.hasStart = false;
-    this.isEditing = false;
-    this.didDrag = false;
+    this.resetState();
   }
 }
+
+/* ================= CurveLineRenderer ================= */
+
 export class CurveLineRenderer {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
 
     this.R = 10;
+    this.MERGE_DIST = 12;
+
     this.bufferCanvas = document.createElement("canvas");
     this.bufferCtx = this.bufferCanvas.getContext("2d");
-
     this.bufferCanvas.width = canvas.width;
     this.bufferCanvas.height = canvas.height;
 
+    this.reset();
+  }
+
+  reset() {
     this.baseSnapshot = null;
     this.start = null;
     this.end = null;
     this.cp1 = null;
     this.cp2 = null;
-
     this.dragging = null;
     this.color = "#000";
     this.size = 1;
@@ -125,13 +106,13 @@ export class CurveLineRenderer {
   }
 
   setStart(pos, color, size) {
-    this.start = pos;
+    this.start = { ...pos };
     this.color = color;
     this.size = size;
   }
 
   setEnd(pos) {
-    this.end = pos;
+    this.end = { ...pos };
     this.computeDefaultCPs();
     this.drawPreview();
   }
@@ -140,28 +121,37 @@ export class CurveLineRenderer {
 
   previewLine(pos) {
     if (!this.start) return;
-    this.end = pos;
+    this.end = { ...pos };
     this.computeDefaultCPs();
     this.drawPreview();
   }
 
+  cpMerged() {
+    if (!this.cp1 || !this.cp2) return false;
+    const dx = this.cp1.x - this.cp2.x;
+    const dy = this.cp1.y - this.cp2.y;
+    return dx * dx + dy * dy < this.MERGE_DIST * this.MERGE_DIST;
+  }
+
   hitAnyControlPoint(pos) {
     if (!this.cp1 || !this.cp2) return false;
+
+    if (this.cpMerged()) {
+      return this.hit(pos, this.cp1, this.R * 2);
+    }
+
     return this.hit(pos, this.cp1) || this.hit(pos, this.cp2);
   }
 
-  drawPreview(debug = true) {
+  drawPreview() {
     if (!this.start || !this.end || !this.baseSnapshot) return;
 
     const w = this.canvas.width;
     const h = this.canvas.height;
 
-    /* -------- rebuild buffer -------- */
-
     this.bufferCtx.clearRect(0, 0, w, h);
     this.bufferCtx.drawImage(this.baseSnapshot, 0, 0);
 
-    // curve
     this.bufferCtx.strokeStyle = this.color;
     this.bufferCtx.lineWidth = this.size;
     this.bufferCtx.lineCap = "round";
@@ -178,74 +168,66 @@ export class CurveLineRenderer {
     );
     this.bufferCtx.stroke();
 
-    /* -------- debug overlays -------- */
-
-    if (debug) {
-      const ctx = this.bufferCtx;
-
-      // start / end points
-      ctx.fillStyle = "blue";
-      ctx.beginPath();
-      ctx.arc(this.start.x, this.start.y, 5, 0, Math.PI * 2);
-      ctx.arc(this.end.x, this.end.y, 5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // control points
-      ctx.fillStyle = "red";
-      ctx.beginPath();
-      ctx.arc(this.cp1.x, this.cp1.y, 5, 0, Math.PI * 2);
-      ctx.arc(this.cp2.x, this.cp2.y, 5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // helper lines
-      ctx.strokeStyle = "rgba(255,0,0,0.3)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(this.start.x, this.start.y);
-      ctx.lineTo(this.cp1.x, this.cp1.y);
-      ctx.moveTo(this.end.x, this.end.y);
-      ctx.lineTo(this.cp2.x, this.cp2.y);
-      ctx.stroke();
-    }
-
-    /* -------- present buffer -------- */
+    this.drawDebug();
 
     this.ctx.clearRect(0, 0, w, h);
     this.ctx.drawImage(this.bufferCanvas, 0, 0);
   }
 
+  drawDebug() {
+    const ctx = this.bufferCtx;
+    ctx.fillStyle = "red";
+    ctx.beginPath();
+
+    if (this.cpMerged()) {
+      ctx.arc(this.cp1.x, this.cp1.y, 6, 0, Math.PI * 2);
+    } else {
+      ctx.arc(this.cp1.x, this.cp1.y, 5, 0, Math.PI * 2);
+      ctx.arc(this.cp2.x, this.cp2.y, 5, 0, Math.PI * 2);
+    }
+
+    ctx.fill();
+  }
+
   /* ---------- control points ---------- */
 
   dragControlPoint(pos) {
-    if (!this.cp1 || !this.cp2) return;
+    if (!this.cp1 || !this.cp2) return null;
+
+    if (this.cpMerged()) {
+      this.cp1.x = pos.x;
+      this.cp1.y = pos.y;
+      this.cp2.x = pos.x;
+      this.cp2.y = pos.y;
+      this.drawPreview();
+      return "merged";
+    }
 
     if (!this.dragging) {
       if (this.hit(pos, this.cp1)) this.dragging = "cp1";
       else if (this.hit(pos, this.cp2)) this.dragging = "cp2";
-      else return;
+      else return null;
     }
 
     this[this.dragging].x = pos.x;
     this[this.dragging].y = pos.y;
     this.drawPreview();
+    return this.dragging;
   }
 
   stopDrag() {
     this.dragging = null;
   }
 
-  hit(p, cp) {
+  hit(p, cp, r = this.R) {
     const dx = p.x - cp.x;
     const dy = p.y - cp.y;
-
-    return dx * dx + dy * dy < this.R * this.R;
+    return dx * dx + dy * dy < r * r;
   }
 
   /* ---------- math ---------- */
 
   computeDefaultCPs() {
-    if (!this.start || !this.end) return;
-
     const midX = (this.start.x + this.end.x) / 2;
     const midY = (this.start.y + this.end.y) / 2;
 
@@ -260,6 +242,7 @@ export class CurveLineRenderer {
 
     this.ctx.strokeStyle = this.color;
     this.ctx.lineWidth = this.size;
+    this.ctx.lineCap = "round";
 
     this.ctx.beginPath();
     this.ctx.moveTo(this.start.x, this.start.y);
@@ -277,16 +260,10 @@ export class CurveLineRenderer {
   }
 
   cancel() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.drawImage(this.baseSnapshot, 0, 0);
+    if (this.baseSnapshot) {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.ctx.drawImage(this.baseSnapshot, 0, 0);
+    }
     this.reset();
-  }
-
-  reset() {
-    this.start = null;
-    this.end = null;
-    this.cp1 = null;
-    this.cp2 = null;
-    this.dragging = null;
   }
 }

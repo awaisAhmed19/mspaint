@@ -104,7 +104,7 @@ class Sidebar extends React.Component {
   };
 
   handleLeave = () => {
-    this.props.clearFooter();
+    this.props.setFooter("For Help, click Help Topics on the Help Menu");
   };
 
   componentDidMount() {

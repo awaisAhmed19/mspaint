@@ -9,6 +9,7 @@ const AppMode = {
   DRAW: "DRAW",
   EDIT: "EDIT",
 };
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -18,7 +19,7 @@ class App extends React.Component {
 
     this.state = {
       mode: AppMode.DRAW,
-      currTool: "pencil",
+      currTool: "PENCIL", // FIX: casing consistency
       currColor: "black",
       toolConfig: {
         type: null,
@@ -33,14 +34,25 @@ class App extends React.Component {
   setToolConfig = (config) => {
     this.setState({ toolConfig: config });
   };
-  footer = {
-    coord: (pos) => this.footerRef.current.updateCoord(pos),
-    dim: (dim) => this.footerRef.current.updateDim(dim),
-    msg: (text) => this.footerRef.current.updateMessage(text),
-    resetMsg: () =>
-      this.footerRef.current.updateMessage(this.state.defaultFooterMsg),
-  };
 
+  footer = {
+    coord: (pos) => {
+      // console.log("[App] coord forwarded:", pos, this.footerRef.current);
+      this.footerRef.current?.updateCoord(pos);
+    },
+    dim: (dim) => {
+      // console.log("[App] dim forwarded:", dim, this.footerRef.current);
+      this.footerRef.current?.updateDim(dim);
+    },
+    msg: (text) => {
+      // console.log("[App] msg forwarded:", text, this.footerRef.current);
+      this.footerRef.current?.updateMessage(text);
+    },
+    clearCoord: () => {
+      // console.log("[App] clearCoord forwarded");
+      this.footerRef.current?.clearCoord();
+    },
+  };
   setTool = (toolName) => {
     this.setState({ currTool: toolName });
   };
@@ -63,14 +75,15 @@ class App extends React.Component {
             clearFooter={this.footer.resetMsg}
             tool={this.state.currTool}
             setTool={this.setTool}
-            currConfig={this.state.toolConfig} // ADD
-            onToolConfigChange={this.setToolConfig} // ADD
+            currConfig={this.state.toolConfig}
+            onToolConfigChange={this.setToolConfig}
           />
+
           <Canvas
             ref={this.canvasRef}
             Dim={{ WIDTH: 750, HEIGHT: 500 }}
             coord={this.footer.coord}
-            clearCoord={this.footer.coord}
+            clearCoord={this.footer.clearCoord} // FIX
             dim={this.footer.dim}
             tool={this.state.currTool}
             color={this.state.currColor}
