@@ -46,7 +46,35 @@ export const TOOLS = {
       },
     },
   },
+  CURVELINE: {
+    name: "Brush",
+    interaction: InteractionType.STROKE,
 
+    options: {
+      size: {
+        type: "number",
+        default: 4,
+        min: 1,
+        max: 12,
+        step: 1,
+      },
+    },
+  },
+
+  AIRBRUSH: {
+    name: "Airbrush",
+    interaction: InteractionType.STROKE,
+
+    options: {
+      size: {
+        type: "number",
+        default: 4,
+        min: 1,
+        max: 12,
+        step: 1,
+      },
+    },
+  },
   ERASER: {
     name: "Eraser",
     interaction: InteractionType.STROKE,
@@ -74,7 +102,18 @@ export const TOOLS = {
       },
     },
   },
+  RECTELLIPSE: {
+    name: "Rectangle",
+    interaction: InteractionType.STROKE,
 
+    options: {
+      mode: {
+        type: "enum",
+        default: "OUTLINE",
+        values: ["OUTLINE", "FILLED", "ROUNDED"],
+      },
+    },
+  },
   ELLIPSE: {
     name: "Ellipse",
     interaction: InteractionType.STROKE,
@@ -147,6 +186,19 @@ export const TOOLS = {
     interaction: InteractionType.STROKE,
     options: {},
   },
+  LINE: {
+    name: "Line",
+    interaction: InteractionType.STROKE,
+    options: {
+      size: {
+        type: "number",
+        default: 3,
+        min: 1,
+        max: 5,
+        step: 1,
+      },
+    },
+  },
   MAGNIFY: {
     name: "Magnification",
     interaction: InteractionType.STROKE,
@@ -178,7 +230,7 @@ export function createTool(toolKey, canvas) {
         tool: new AirBrushTool(meta),
         renderer: new AirBrushRenderer(canvas),
       };
-    case "CURVE":
+    case "CURVELINE":
       return {
         tool: new CurveLineTool(meta),
         renderer: new CurveLineRenderer(canvas),
@@ -209,6 +261,11 @@ export function createTool(toolKey, canvas) {
       return {
         tool: new RectTool(meta),
         renderer: new RectRenderer(canvas),
+      };
+    case "LINE":
+      return {
+        tool: new LineTool(meta),
+        renderer: new LineRenderer(canvas),
       };
 
     case "RECTELLIPSE":

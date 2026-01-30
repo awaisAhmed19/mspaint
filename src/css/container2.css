@@ -84,9 +84,9 @@
 .toolbar {
   background-color: transparent;
   position: relative;
-  width: 85%;
+  width: 90%;
+  left: 5%;
   height: fit-content;
-  justify-self: center;
   display: flex;
   flex-wrap: wrap;
   /* grid-template-columns: repeat(2, 26px); */
@@ -171,10 +171,11 @@
   background-color: transparent;
   position: relative;
   display: flex;
-  justify-self: center;
-  width: 80%;
+  width: 85%;
   height: 4.5rem;
   top: 0.3vh;
+  left: 0.29vw;
+  justify-self: center;
   border-top: 1px solid grey;
   border-right: 1px solid var(--borderlight);
   border-left: 1px solid grey;

@@ -1,14 +1,17 @@
 import React from "react";
-import { AirBrushOptions ,
-BrushOptions ,
-CurveLineOptions,
-EllipseOptions ,
-EraserOptions ,
-LineOptions ,
-MagnificationOptions,
-PolygonOptions,
-RectElipseOptions,
-RectShapeOptions } from "./ToolOptions.jsx";
+import {
+  AirBrushOptions,
+  BrushOptions,
+  CurveLineOptions,
+  EllipseOptions,
+  EraserOptions,
+  LineOptions,
+  MagnificationOptions,
+  PolygonOptions,
+  RectElipseOptions,
+  RectShapeOptions,
+} from "./ToolOptions.jsx";
+
 class Sidebar extends React.Component {
   constructor(props) {
     super(props);
@@ -19,20 +22,56 @@ class Sidebar extends React.Component {
       startMouse: { x: 0, y: 0 },
       startPos: { x: 0, y: 0 },
       position: { x: 0, y: 0 },
-      currTool: "pencil",
-      prevTool: "pencil",
+      currTool: "PENCIL",
+      holdTimeout: null,
     };
+
     this.TOOL_OPTIONS = {
       AIRBRUSH: AirBrushOptions,
       BRUSH: BrushOptions,
       CURVELINE: CurveLineOptions,
       ELLIPSE: EllipseOptions,
+      RECT: RectShapeOptions,
       ERASER: EraserOptions,
       LINE: LineOptions,
       MAGNIFY: MagnificationOptions,
       POLYGON: PolygonOptions,
       RECTELLIPSE: RectElipseOptions,
     };
+
+    this.TOOL_SELECTED_KEY = {
+      PENCIL: "size",
+      BRUSH: "size",
+      AIRBRUSH: "size",
+      ERASER: "size",
+      LINE: "size",
+      CURVELINE: "size",
+      RECT: "mode",
+      ELLIPSE: "mode",
+      POLYGON: "mode",
+      RECTELLIPSE: "mode",
+      MAGNIFY: "zoom",
+    };
+
+    this.TOOLS = [
+      { id: "rectlasso", tool: "RECTLASSO" },
+      { id: "lasso", tool: "LASSO" },
+      { id: "eraser", tool: "ERASER" },
+      { id: "floodfill", tool: "FLOOD" },
+      { id: "eyedrop", tool: "EYEDROP" },
+      { id: "magnification", tool: "MAGNIFY" },
+      { id: "pencil", tool: "PENCIL" },
+      { id: "brush", tool: "BRUSH" },
+      { id: "airbrush", tool: "AIRBRUSH" },
+      { id: "text", tool: "TEXT" },
+      { id: "line", tool: "LINE" },
+      { id: "curveline", tool: "CURVELINE" },
+      { id: "rectshape", tool: "RECT" },
+      { id: "polygonshape", tool: "POLYGON" },
+      { id: "ellipse", tool: "ELLIPSE" },
+      { id: "rectelipse", tool: "RECTELLIPSE" },
+    ];
+
     this.Toolsfootnote = {
       lasso: "Selects a free-form of the picture to move, copy, or edit.",
       rectlasso:
@@ -53,11 +92,10 @@ class Sidebar extends React.Component {
       ellipse: "Draws an ellipse with the selected fill style",
       rectelipse: "Draws a rounded rectangle with the selected fill style",
     };
+
     this.sidebarRef = React.createRef();
   }
-  getcurrtool=()=>{
-    return this.state.currTool;
-  }
+
   handleEnter = (e) => {
     const id = e.currentTarget.id;
     if (this.Toolsfootnote[id]) {
@@ -77,24 +115,26 @@ class Sidebar extends React.Component {
   componentWillUnmount() {
     window.removeEventListener("mousemove", this.onDrag);
     window.removeEventListener("mouseup", this.stopDrag);
+    clearTimeout(this.state.holdTimeout);
   }
 
   startHoldToDetach = (e) => {
+    clearTimeout(this.state.holdTimeout);
     if (e.target.closest(".toolbar")) return;
 
-    const timeout = setTimeout(() => {
+    const holdTimeout = setTimeout(() => {
       this.setState({ floating: true, dragging: true });
     }, 700);
 
     this.setState({
-      holdTimeout: timeout,
+      holdTimeout,
       startMouse: { x: e.clientX, y: e.clientY },
       startPos: { ...this.state.position },
     });
   };
 
   onDrag = (e) => {
-    if (!this.state.floating || !this.state.dragging) return;
+    if (!this.state.dragging) return;
 
     const dx = e.clientX - this.state.startMouse.x;
     const dy = e.clientY - this.state.startMouse.y;
@@ -109,154 +149,72 @@ class Sidebar extends React.Component {
 
   stopDrag = () => {
     clearTimeout(this.state.holdTimeout);
-    if (!this.state.floating) return;
-
-    this.setState({ dragging: false });
+    this.setState({ dragging: false, holdTimeout: null });
   };
 
   render() {
     const OptionPanel = this.TOOL_OPTIONS[this.state.currTool];
+    const cfg = this.props.currConfig || {};
+    const key = this.TOOL_SELECTED_KEY[this.state.currTool];
+    const selected = key ? cfg[key] : undefined;
 
-    console.log("Tool:",this.state.currTool);
-    console.log("OptionPanel:",OptionPanel);
+    // {
+    //   this.TOOLS.map(({ id, tool }) => {
+    //     console.log("BTN", { id, tool, currTool: this.state.currTool });
+    //
+    //     return (
+    //       <button
+    //         key={id}
+    //         id={id}
+    //         className={`tools ${this.props.tool === tool ? "pressed" : ""}`}
+    //         onMouseEnter={this.handleEnter}
+    //         onMouseLeave={this.handleLeave}
+    //         onClick={() => this.props.setTool(tool)}
+    //       />
+    //     );
+    //   });
+    // }
     return (
-      <>
-        <div
-          ref={this.sidebarRef}
-          className={this.state.floating ? "sidebar floating" : "sidebar"}
-          style={{
-            position: this.state.floating ? "absolute" : "relative",
-            left: this.state.floating ? this.state.position.x : 0,
-            top: this.state.floating ? this.state.position.y : 0,
-            cursor: this.state.floating ? "grab" : "default",
-          }}
-          onMouseDown={this.startHoldToDetach}
-        >
-          {" "}
-          <div className="toolbar">
+      <div
+        ref={this.sidebarRef}
+        className={this.state.floating ? "sidebar floating" : "sidebar"}
+        style={{
+          position: this.state.floating ? "absolute" : "relative",
+          left: this.state.floating ? this.state.position.x : 0,
+          top: this.state.floating ? this.state.position.y : 0,
+          cursor: this.state.floating
+            ? this.state.dragging
+              ? "grabbing"
+              : "grab"
+            : "default",
+        }}
+        onMouseDown={this.startHoldToDetach}
+      >
+        <div className="toolbar">
+          {this.TOOLS.map(({ id, tool }) => (
             <button
-              className="tools"
-              id="rectlasso"
+              key={id}
+              id={id}
+              className={`tools ${this.state.currTool === tool ? "pressed" : ""}`}
               onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "RECTLASSO" })}
               onMouseLeave={this.handleLeave}
-            ></button>
-            <button
-              className="tools"
-              id="lasso"
-              onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "LASSO" })}
-              onMouseLeave={this.handleLeave}
-            ></button>
-            <button
-              className="tools"
-              id="eraser"
-              onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "ERASER" })}
-              onMouseLeave={this.handleLeave}
-            ></button>
-            <button
-              className="tools"
-              id="floodfill"
-              onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "FLOOD" })}
-              onMouseLeave={this.handleLeave}
-            ></button>
-            <button
-              className="tools"
-              id="eyedrop"
-              onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "EYEDROP" })}
-              onMouseLeave={this.handleLeave}
-            ></button>
-            <button
-              className="tools"
-              id="magnification"
-              onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "MAGNIFY" })}
-              onMouseLeave={this.handleLeave}
-            ></button>
-            <button
-              className="tools"
-              id="pencil"
-              onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "PENCIL" })}
-              onMouseLeave={this.handleLeave}
-            ></button>
-            <button
-              className="tools"
-              id="brush"
-              onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "BRUSH" })}
-              onMouseLeave={this.handleLeave}
-            ></button>
-            <button
-              className="tools"
-              id="airbrush"
-              onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "AIRBRUSH" })}
-              onMouseLeave={this.handleLeave}
-            ></button>
-            <button
-              className="tools"
-              id="text"
-              onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "TEXT" })}
-              onMouseLeave={this.handleLeave}
-            ></button>
-            <button
-              className="tools"
-              id="line"
-              onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "LINE" })}
-              onMouseLeave={this.handleLeave}
-            ></button>
-            <button
-              className="tools"
-              id="curveline"
-              onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "CURVELINE" })}
-              onMouseLeave={this.handleLeave}
-            ></button>
-            <button
-              className="tools"
-              id="rectshape"
-              onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "RECT" })}
-              onMouseLeave={this.handleLeave}
-            ></button>
-            <button
-              className="tools"
-              id="polygonshape"
-              onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "POLYGON" })}
-              onMouseLeave={this.handleLeave}
-            ></button>
-            <button
-              className="tools"
-              id="ellipse"
-              onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "ELLIPSE" })}
-              onMouseLeave={this.handleLeave}
-            ></button>
-            <button
-              className="tools"
-              id="rectelipse"
-              onMouseEnter={this.handleEnter}
-              onClick={() => this.setState({ currTool: "RECTELLIPSE" })}
-              onMouseLeave={this.handleLeave}
-            ></button>
-          </div>
-          <div className="optionWindow">
-            {OptionPanel && (
-              <OptionPanel
-                selected={this.props.currConfig?.size}
-                onSelect={this.props.onToolConfigChange}
-              />
-            )}
-          </div>
+              onClick={() => {
+                this.state.currTool = tool;
+                this.props.setTool(tool);
+              }}
+            />
+          ))}
         </div>
-      </>
+
+        <div className="optionWindow">
+          {OptionPanel && (
+            <OptionPanel
+              selected={selected}
+              onSelect={this.props.onToolConfigChange}
+            />
+          )}
+        </div>
+      </div>
     );
   }
 }

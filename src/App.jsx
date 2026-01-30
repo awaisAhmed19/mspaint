@@ -5,9 +5,9 @@ import Canvas from "./components/container2/Canvas";
 import Pallete from "./components/container3/Pallete";
 import Footer from "./components/container4/Footer";
 
-const AppMode= {
-  DRAW:"DRAW",
-  EDIT:"EDIT",
+const AppMode = {
+  DRAW: "DRAW",
+  EDIT: "EDIT",
 };
 class App extends React.Component {
   constructor(props) {
@@ -17,16 +17,14 @@ class App extends React.Component {
     this.canvasRef = React.createRef();
 
     this.state = {
-      mode:AppMode.DRAW,
+      mode: AppMode.DRAW,
       currTool: "pencil",
       currColor: "black",
       toolConfig: {
-        type:null,
-        options:{
-
-          size:null,
-        }
-
+        type: null,
+        options: {
+          size: null,
+        },
       },
       defaultFooterMsg: "For Help, click Help Topics on the Help Menu",
     };
@@ -63,6 +61,7 @@ class App extends React.Component {
           <Sidebar
             setFooter={this.footer.msg}
             clearFooter={this.footer.resetMsg}
+            tool={this.state.currTool}
             setTool={this.setTool}
             currConfig={this.state.toolConfig} // ADD
             onToolConfigChange={this.setToolConfig} // ADD
@@ -75,7 +74,7 @@ class App extends React.Component {
             dim={this.footer.dim}
             tool={this.state.currTool}
             color={this.state.currColor}
-            toolConfig={this.state.toolConfig} // ADD THIS
+            toolConfig={this.state.toolConfig}
           />
 
           <div className="right-sidebar"></div>

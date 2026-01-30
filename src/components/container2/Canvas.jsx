@@ -73,6 +73,19 @@ export default class Canvas extends React.Component {
     window.addEventListener("mouseup", this.stopResize);
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.tool !== this.props.tool) {
+      this.switchTool(this.props.tool);
+    }
+
+    if (prevProps.color !== this.props.color) {
+      this.stateRef.color = this.props.color;
+    }
+
+    if (prevProps.toolConfig !== this.props.toolConfig) {
+      Object.assign(this.stateRef, this.props.toolConfig);
+    }
+  }
   componentWillUnmount() {
     window.removeEventListener("mousemove", this.resize);
     window.removeEventListener("mouseup", this.stopResize);
