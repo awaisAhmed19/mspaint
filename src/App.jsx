@@ -4,7 +4,7 @@ import Sidebar from "./components/container2/Sidebar";
 import Canvas from "./components/container2/Canvas";
 import Pallete from "./components/container3/Pallete";
 import Footer from "./components/container4/Footer";
-
+import { dispatchCommand } from "./commandRouter/index.js";
 const AppMode = {
   DRAW: "DRAW",
   EDIT: "EDIT",
@@ -16,10 +16,13 @@ class App extends React.Component {
 
     this.footerRef = React.createRef();
     this.canvasRef = React.createRef();
-
+    this.commandCtx = {
+      canvasEngine: null,
+      fileSystem: null, // later
+    };
     this.state = {
       mode: AppMode.DRAW,
-      currTool: "PENCIL", // FIX: casing consistency
+      currTool: "PENCIL",
       currColor: "black",
       toolConfig: {
         type: null,
@@ -31,28 +34,28 @@ class App extends React.Component {
     };
   }
 
-  setToolConfig = (config) => {
-    this.setState({ toolConfig: config });
-  };
+  /* ================= FOOTER API ================= */
 
   footer = {
     coord: (pos) => {
-      // console.log("[App] coord forwarded:", pos, this.footerRef.current);
       this.footerRef.current?.updateCoord(pos);
     },
     dim: (dim) => {
-      // console.log("[App] dim forwarded:", dim, this.footerRef.current);
       this.footerRef.current?.updateDim(dim);
     },
     msg: (text) => {
-      // console.log("[App] msg forwarded:", text, this.footerRef.current);
       this.footerRef.current?.updateMessage(text);
     },
     clearCoord: () => {
-      // console.log("[App] clearCoord forwarded");
       this.footerRef.current?.clearCoord();
     },
+    resetMsg: () => {
+      this.footerRef.current?.updateMessage(this.state.defaultFooterMsg);
+    },
   };
+
+  /* ================= APP STATE ================= */
+
   setTool = (toolName) => {
     this.setState({ currTool: toolName });
   };
@@ -61,12 +64,25 @@ class App extends React.Component {
     this.setState({ currColor: color });
   };
 
+  setToolConfig = (config) => {
+    this.setState({ toolConfig: config });
+  };
+
+  /* ================= COMMAND DISPATCH ================= */
+
+  dispatchCommand = (cmd) => {
+    dispatchCommand(cmd, this.commandCtx);
+  };
+
+  /* ================= RENDER ================= */
+
   render() {
     return (
       <>
         <Menubar
           setFooter={this.footer.msg}
           clearFooter={this.footer.resetMsg}
+          dispatchCommand={this.dispatchCommand}
         />
 
         <div className="container-2">
@@ -83,13 +99,15 @@ class App extends React.Component {
             ref={this.canvasRef}
             Dim={{ WIDTH: 750, HEIGHT: 500 }}
             coord={this.footer.coord}
-            clearCoord={this.footer.clearCoord} // FIX
+            clearCoord={this.footer.clearCoord}
             dim={this.footer.dim}
             tool={this.state.currTool}
             color={this.state.currColor}
             toolConfig={this.state.toolConfig}
+            onEngineReady={(engine) => {
+              this.commandCtx.canvasEngine = engine;
+            }}
           />
-
           <div className="right-sidebar"></div>
         </div>
 

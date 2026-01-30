@@ -54,9 +54,9 @@ export default class Canvas extends React.Component {
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // ✅ overlay passed correctly
     this.engine = createCanvasEngine(canvas, this.overlayRef.current);
 
+    this.props.onEngineReady?.(this.engine);
     this.controller = new CanvasController(
       this.engine,
       null,

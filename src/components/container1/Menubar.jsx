@@ -41,52 +41,33 @@ class Menubar extends React.Component {
 
   renderMenu = () => {
     const { activeMenu } = this.state;
+    const { setFooter, clearFooter, dispatchCommand } = this.props;
+
+    const commonProps = {
+      setFooter,
+      clearFooter,
+      dispatchCommand,
+    };
 
     switch (activeMenu) {
       case "file":
-        return (
-          <FileMenu
-            setFooter={this.props.setFooter}
-            clearFooter={this.props.clearFooter}
-          />
-        );
+        return <FileMenu {...commonProps} />;
+
       case "edit":
-        return (
-          <EditMenu
-            setFooter={this.props.setFooter}
-            clearFooter={this.props.clearFooter}
-          />
-        );
+        return <EditMenu {...commonProps} />;
+
       case "view":
-        return (
-          <ViewMenu
-            setFooter={this.props.setFooter}
-            clearFooter={this.props.clearFooter}
-          />
-        );
+        return <ViewMenu {...commonProps} />;
+
       case "layer":
-        return (
-          <LayerMenu
-            setFooter={this.props.setFooter}
-            clearFooter={this.props.clearFooter}
-          />
-        );
+        return <LayerMenu {...commonProps} />;
+
       case "image":
-        return (
-          <ImageMenu
-            setFooter={this.props.setFooter}
-            clearFooter={this.props.clearFooter}
-          />
-        );
+        return <ImageMenu {...commonProps} />;
+
       case "colors":
-        return (
-          <ColorMenu
-            setFooter={this.props.setFooter}
-            clearFooter={this.props.clearFooter}
-          />
-        );
-      //case "help":
-      // return <HelpMenu />;
+        return <ColorMenu {...commonProps} />;
+
       default:
         return null;
     }
