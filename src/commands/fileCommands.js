@@ -3,5 +3,9 @@ export function fileNew(ctx) {
 }
 
 export function fileSave(ctx) {
-  ctx.fileSystem.save(ctx.canvasEngine.snapshot());
+  return ctx.persistence.save(ctx.canvasEngine);
+}
+
+export function fileOpen(ctx) {
+  return ctx.persistence.loadLatest(ctx.canvasEngine);
 }

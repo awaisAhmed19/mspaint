@@ -5,6 +5,7 @@ import Canvas from "./components/container2/Canvas";
 import Pallete from "./components/container3/Pallete";
 import Footer from "./components/container4/Footer";
 import { dispatchCommand } from "./commandRouter/index.js";
+import { createPersistence } from "./svc/presistence.js";
 const AppMode = {
   DRAW: "DRAW",
   EDIT: "EDIT",
@@ -18,7 +19,8 @@ class App extends React.Component {
     this.canvasRef = React.createRef();
     this.commandCtx = {
       canvasEngine: null,
-      fileSystem: null, // later
+      fileSystem: null,
+      persistence: createPersistence(),
     };
     this.state = {
       mode: AppMode.DRAW,
