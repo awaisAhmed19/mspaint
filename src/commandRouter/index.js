@@ -2,17 +2,13 @@ import { handleFileCommand } from "./fileRouter";
 import { handleEditCommand } from "./editRouter";
 import { handleViewCommand } from "./viewRouter";
 import { handleImageCommand } from "./imageRouter";
-import { uiOpenDialog, uiCloseDialog } from "../commands/ui.js";
+import { handleUICommand } from "./uiRouter";
 
+import { handleColorCommand } from "./colorsRouter.js";
 export function dispatchCommand(cmd, ctx, payload) {
-  if (cmd === "UI_OPEN_DIALOG") {
-    return uiOpenDialog(ctx, payload);
+  if (cmd.startsWith("UI_")) {
+    return handleUICommand(cmd, ctx, payload);
   }
-
-  if (cmd === "UI_CLOSE_DIALOG") {
-    return uiCloseDialog(ctx);
-  }
-
   if (cmd.startsWith("FILE_")) {
     return handleFileCommand(cmd, ctx, payload);
   }
@@ -27,6 +23,9 @@ export function dispatchCommand(cmd, ctx, payload) {
 
   if (cmd.startsWith("IMAGE_")) {
     return handleImageCommand(cmd, ctx, payload);
+  }
+  if (cmd.startsWith("COLOR_")) {
+    return handleColorCommand(cmd, ctx, payload);
   }
 
   console.warn("Unknown command:", cmd);

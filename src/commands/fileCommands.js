@@ -1,3 +1,4 @@
+import { dispatchCommand } from "../commandRouter/index.js";
 export function fileNew(ctx) {
   ctx.canvasEngine.clear();
 }
@@ -104,18 +105,8 @@ export async function fileUploadToImgur(ctx) {
   }
 }
 //can use some rect to make a windows 98 theme floating window to show the files saved recently on the mongo db server
-export function fileManageStorage(ctx) {
-  const used = JSON.stringify(localStorage).length;
-  const kb = (used / 1024).toFixed(2);
-
-  const choice = confirm(
-    `Local storage used: ${kb} KB\n\nClear all stored data?`,
-  );
-
-  if (choice) {
-    localStorage.clear();
-    alert("Storage cleared");
-  }
+export function fileManageStorageDialog(ctx, payload) {
+  ctx.ui.setState({ activeDialog: "FILE_MANAGE_STORAGE" });
 }
 
 //can use some rect to make a windows 98 theme floating window to show the files saved recently on the mongo db server
@@ -145,4 +136,41 @@ export function appExit(ctx) {
 
   // fallback if browser blocks it
   alert("You can now close this tab.");
+}
+
+export async function imageDeleteRemote(ctx, { id }) {
+  await fetch(`/api/snapshots/${id}`, { method: "DELETE" });
+
+  dispatchCommand("IMAGE_LIST_REMOTE", ctx, {
+    page: ctx.uiStoragePage || 0,
+    limit: ctx.uiStorageLimit || 20,
+  });
+}
+
+export async function imageLoadRemote(ctx, { id }) {
+  const res = await fetch(`/api/snapshots/${id}`);
+  const { dataURL } = await res.json();
+
+  const img = new Image();
+  img.onload = () => {
+    ctx.canvasController.onBeforeChange();
+    ctx.canvasEngine.fromImage(img);
+    ctx.canvasEngine.commit();
+  };
+
+  img.src = dataURL;
+}
+
+export async function imageListRemote(ctx, payload = {}) {
+  const res = await fetch("/api/snapshots");
+  const images = await res.json();
+
+  console.log("[FRONTEND] snapshots:", images); // 🔍 ADD THIS
+
+  ctx.ui.setState({
+    activeDialog: "MANAGE_STORAGE",
+    savedImages: images,
+    storagePage: 0,
+    storageLimit: 20,
+  });
 }

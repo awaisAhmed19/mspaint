@@ -1,5 +1,6 @@
 // src/commands/image.js
 
+const API = "http://localhost:3000/api/snapshots";
 export const IMAGE_COMMANDS = {
   Flip_Rotate: "IMAGE_FLIP_ROTATE",
   Stretch_Skew: "IMAGE_STRETCH_SKEW",
@@ -60,4 +61,44 @@ export function imageClear(ctx) {
 
 export function imageDrawOpaque(ctx) {
   console.warn("[IMAGE] Draw Opaque – not implemented yet");
+}
+export async function imageLoadRemote(ctx, { id }) {
+  const res = await fetch(`/api/snapshots/${id}`);
+  const { dataURL } = await res.json();
+
+  const img = new Image();
+  img.onload = () => {
+    ctx.canvasController.onBeforeChange();
+    ctx.canvasEngine.fromImage(img);
+    ctx.canvasEngine.commit();
+  };
+
+  img.src = dataURL;
+}
+
+export async function imageListRemote(ctx, payload = {}) {
+  const res = await fetch(API);
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("[IMAGE_LIST_REMOTE] Bad response:", text);
+    return;
+  }
+
+  const images = await res.json();
+
+  ctx.ui.setState({
+    activeDialog: "MANAGE_STORAGE",
+    savedImages: images,
+    storagePage: 0,
+    storageLimit: 20,
+    deleteTargetId: null,
+  });
+}
+
+export async function imageDeleteRemote(ctx, { id }) {
+  await fetch(`/api/snapshots/${id}`, { method: "DELETE" });
+
+  // refresh list
+  dispatchCommand("IMAGE_LIST_REMOTE", ctx);
 }

@@ -8,6 +8,9 @@ import {
   imageAttributes,
   imageClear,
   imageDrawOpaque,
+  imageListRemote,
+  imageLoadRemote,
+  imageDeleteRemote,
 } from "../commands/image.js";
 
 export function handleImageCommand(cmd, ctx, payload) {
@@ -37,6 +40,14 @@ export function handleImageCommand(cmd, ctx, payload) {
 
     case "IMAGE_DRAW_OPAQUE":
       return imageDrawOpaque(ctx);
+    case "IMAGE_LIST_REMOTE":
+      return imageListRemote(ctx, payload);
+
+    case "IMAGE_LOAD_REMOTE":
+      return imageLoadRemote(ctx, payload);
+
+    case "IMAGE_DELETE_REMOTE":
+      return imageDeleteRemote(ctx, payload);
 
     default:
       console.warn("Unhandled image command:", cmd);

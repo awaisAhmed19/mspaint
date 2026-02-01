@@ -35,7 +35,7 @@ class App extends React.Component {
     this.commandCtx = {
       canvasEngine: null,
       fileSystem: null,
-      persistence: createPersistence(),
+      persistence: createPersistence(this.dispatchCommand, this.commandCtx),
 
       ui: {
         get showToolBox() {
@@ -90,8 +90,14 @@ class App extends React.Component {
         showStatusBar: true,
         showTextToolbar: false,
         zoomed: false,
-        viewBitmap: false, // 👈 ADD
+        viewBitmap: false,
+
         activeDialog: null,
+
+        savedImages: [],
+        storagePage: 0,
+        storageLimit: 20,
+        deleteTargetId: null,
       },
       toolConfig: {
         type: null,

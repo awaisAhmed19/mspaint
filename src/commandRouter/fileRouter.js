@@ -5,12 +5,15 @@ import {
   fileSaveAs,
   fileLoadFromURL,
   fileUploadToImgur,
-  fileManageStorage,
+  fileManageStorageDialog,
   fileRecent,
   appExit,
+  imageListRemote,
+  imageLoadRemote,
+  imageDeleteRemote,
 } from "../commands/fileCommands.js";
 
-export function handleFileCommand(cmd, ctx) {
+export function handleFileCommand(cmd, ctx, payload) {
   switch (cmd) {
     case "FILE_NEW":
       return fileNew(ctx);
@@ -31,7 +34,7 @@ export function handleFileCommand(cmd, ctx) {
       return fileUploadToImgur(ctx);
 
     case "FILE_MANAGE_STORAGE":
-      return fileManageStorage(ctx);
+      return fileManageStorageDialog(ctx);
 
     case "FILE_RECENT":
       return fileRecent(ctx);

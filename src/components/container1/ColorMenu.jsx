@@ -1,4 +1,5 @@
 import React from "react";
+import { COLOR_COMMANDS } from "../../commands/colors.js";
 
 class ColorMenu extends React.Component {
   constructor(props) {
@@ -12,17 +13,22 @@ class ColorMenu extends React.Component {
 
   handleEnter = (e) => {
     const id = e.currentTarget.id;
-
     if (this.Colorfootnote[id]) {
       this.props.setFooter(this.Colorfootnote[id]);
-    } else {
-      console.warn("No footnote found for:", id);
     }
   };
 
   handleLeave = () => {
     this.props.clearFooter();
   };
+
+  handleClick = (e) => {
+    const id = e.currentTarget.id;
+    const cmd = COLOR_COMMANDS[id];
+    if (!cmd) return;
+    this.props.dispatchCommand(cmd);
+  };
+
   render() {
     return (
       <div className="dropdown" id="colors_toggle" style={{ left: "180px" }}>
@@ -40,6 +46,7 @@ class ColorMenu extends React.Component {
               id="Edit_Colors"
               onMouseEnter={this.handleEnter}
               onMouseLeave={this.handleLeave}
+              onClick={this.handleClick}
             >
               <td className="tickspace"></td>
               <td className="menu-item-label">Edit Colors..</td>
@@ -51,6 +58,7 @@ class ColorMenu extends React.Component {
               id="Get_Colors"
               onMouseEnter={this.handleEnter}
               onMouseLeave={this.handleLeave}
+              onClick={this.handleClick}
             >
               <td className="tickspace"></td>
               <td className="menu-item-label">Get Colors</td>
@@ -62,6 +70,7 @@ class ColorMenu extends React.Component {
               id="Save_Colors"
               onMouseEnter={this.handleEnter}
               onMouseLeave={this.handleLeave}
+              onClick={this.handleClick}
             >
               <td className="tickspace"></td>
               <td className="menu-item-label">Save Color</td>
@@ -80,3 +89,4 @@ class ColorMenu extends React.Component {
 }
 
 export default ColorMenu;
+``;

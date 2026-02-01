@@ -102,6 +102,40 @@ legend {
   margin-top: 10px;
 }
 
+.window-close-button {
+  position: relative;
+}
+
+/* the X */
+.window-close-button::before,
+.window-close-button::after {
+  content: "";
+  position: absolute;
+
+  top: 3px;
+  left: 6px;
+
+  width: 2px;
+  height: 8px;
+
+  background-color: black;
+}
+
+.window-close-button::before {
+  transform: rotate(45deg);
+}
+
+.window-close-button::after {
+  transform: rotate(-45deg);
+}
+
+/* pressed-in look */
+.window-close-button:active::before,
+.window-close-button:active::after {
+  top: 4px;
+  left: 7px;
+}
+
 .button-group button {
   min-width: 60px;
   height: 22px;
@@ -115,7 +149,220 @@ legend {
   font-size: 11px;
 }
 
+/* ============================= */
+/* SAVE COLORS DIALOG            */
+/* ============================= */
+
+.window-content form > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Label rows */
+.window-content label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  font-size: 11px;
+  user-select: none;
+  gap: 6px;
+}
+
+/* File name input */
+.file-name {
+  width: 140px;
+  height: 18px;
+
+  background-color: white;
+  font-size: 11px;
+
+  border-top: 1px solid var(--borderdark);
+  border-left: 1px solid var(--borderdark);
+  border-right: 1px solid var(--borderlight);
+  border-bottom: 1px solid var(--borderlight);
+
+  box-sizing: border-box;
+}
+
+/* File type select */
+.file-type-select {
+  width: 140px;
+  height: 18px;
+
+  background-color: white;
+  font-size: 11px;
+
+  border-top: 1px solid var(--borderdark);
+  border-left: 1px solid var(--borderdark);
+  border-right: 1px solid var(--borderlight);
+  border-bottom: 1px solid var(--borderlight);
+
+  box-sizing: border-box;
+}
+
+/* Ensure button row spacing matches Win98 dialogs */
+.window-content .button-group {
+  margin-top: 12px;
+}
 .button-group button:active {
+  border-top: 1px solid var(--borderdark);
+  border-left: 1px solid var(--borderdark);
+  border-right: 1px solid var(--borderlight);
+  border-bottom: 1px solid var(--borderlight);
+}
+.define-custom-colors-button {
+  min-width: 60px;
+  height: 22px;
+
+  background-color: var(--main-color);
+
+  border-top: 1px solid var(--borderlight);
+  border-left: 1px solid var(--borderlight);
+  border-right: 1px solid var(--borderdark);
+  border-bottom: 1px solid var(--borderdark);
+
+  font-size: 11px;
+  line-height: 20px;
+
+  padding: 0 6px;
+  box-sizing: border-box;
+
+  cursor: default;
+}
+define-custom-colors-button:active {
+  border-top: 1px solid var(--borderdark);
+  border-left: 1px solid var(--borderdark);
+  border-right: 1px solid var(--borderlight);
+  border-bottom: 1px solid var(--borderlight);
+}
+define-custom-colors-button: disabled,
+define-custom-colors-button.disabled {
+  color: rgb(128, 128, 128);
+  cursor: default;
+
+  text-shadow: 1px 1px 0px rgb(255, 255, 255);
+
+  border-top: 1px solid var(--borderlight);
+  border-left: 1px solid var(--borderlight);
+  border-right: 1px solid var(--borderlighterdark);
+  border-bottom: 1px solid var(--borderlighterdark);
+
+  background-color: var(--main-color);
+}
+/* .swatch { */
+/*   width: 16px; */
+/*   height: 13px; */
+/*   box-sizing: border-box; */
+/**/
+/*   border-top: 1px solid var(--borderdark); */
+/*   border-left: 1px solid var(--borderdark); */
+/*   border-right: 1px solid var(--borderlight); */
+/*   border-bottom: 1px solid var(--borderlight); */
+/* } */
+/* RIGHT PANEL CONTAINER */
+.right-side {
+  position: relative;
+  height: 100%;
+  background-color: var(--main-color);
+
+  border-left: 1px solid var(--borderdark);
+  padding: 6px;
+  box-sizing: border-box;
+}
+
+/* LABELS */
+.right-side label {
+  font-size: 11px;
+  user-select: none;
+}
+
+/* INPUTS */
+.right-side input.inset-deep {
+  height: 14px;
+  font-size: 11px;
+  box-sizing: border-box;
+
+  background-color: white;
+
+  border-top: 1px solid var(--borderdark);
+  border-left: 1px solid var(--borderdark);
+  border-right: 1px solid var(--borderlight);
+  border-bottom: 1px solid var(--borderlight);
+}
+
+/* RAINBOW (HUE/SAT) CANVAS */
+
+.rainbow-canvas {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+
+  width: 160px;
+  height: 160px;
+
+  background: linear-gradient(
+      to top,
+      rgba(128, 128, 128, 1),
+      rgba(255, 255, 255, 0)
+    ),
+    linear-gradient(to right, red, yellow, lime, cyan, blue, magenta, red);
+
+  border-top: 1px solid var(--borderdark);
+  border-left: 1px solid var(--borderdark);
+  border-right: 1px solid var(--borderlight);
+  border-bottom: 1px solid var(--borderlight);
+}
+
+/* LUMINOSITY SLIDER CANVAS */
+.luminosity-canvas {
+  position: absolute;
+  left: 190px;
+  top: 10px;
+
+  height: 160px;
+  background: linear-gradient(
+    to top,
+    rgba(128, 128, 128, 1),
+    rgba(255, 255, 255, 0)
+  );
+
+  border-top: 1px solid var(--borderdark);
+  border-left: 1px solid var(--borderdark);
+  border-right: 1px solid var(--borderlight);
+  border-bottom: 1px solid var(--borderlight);
+}
+
+/* RESULT COLOR PREVIEW */
+.result-color-canvas {
+  background: #fff;
+
+  border-top: 1px solid var(--borderdark);
+  border-left: 1px solid var(--borderdark);
+  border-right: 1px solid var(--borderlight);
+  border-bottom: 1px solid var(--borderlight);
+}
+
+/* ADD TO CUSTOM COLORS BUTTON */
+.add-to-custom-colors-button {
+  position: absolute;
+  left: 90px;
+  top: 285px;
+
+  height: 22px;
+  padding: 0 6px;
+
+  font-size: 11px;
+  background-color: var(--main-color);
+
+  border-top: 1px solid var(--borderlight);
+  border-left: 1px solid var(--borderlight);
+  border-right: 1px solid var(--borderdark);
+  border-bottom: 1px solid var(--borderdark);
+}
+
+.add-to-custom-colors-button:active {
   border-top: 1px solid var(--borderdark);
   border-left: 1px solid var(--borderdark);
   border-right: 1px solid var(--borderlight);
