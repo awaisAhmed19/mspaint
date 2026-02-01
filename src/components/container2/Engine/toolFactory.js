@@ -159,12 +159,16 @@ export const TOOLS = {
     name: "Lasso",
     interaction: InteractionType.MODAL,
     options: {},
+    interaction: InteractionType.MODAL,
+    supportsSelection: true,
   },
 
   RECTLASSO: {
     name: "Rectangular Lasso",
     interaction: InteractionType.MODAL,
     options: {},
+    interaction: InteractionType.MODAL,
+    supportsSelection: true,
   },
 
   FLOOD: {

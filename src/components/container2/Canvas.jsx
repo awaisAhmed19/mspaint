@@ -19,11 +19,12 @@ export default class Canvas extends React.Component {
     this.canvasRef = React.createRef();
     this.canvasContainerRef = React.createRef();
     this.overlayRef = React.createRef();
-    /* ---------- buffers ---------- */
+
+    /* ---------- resize buffers ---------- */
     this.bufferCanvas = document.createElement("canvas");
     this.bufferCtx = this.bufferCanvas.getContext("2d");
 
-    /* ---------- engine ---------- */
+    /* ---------- engine & controller ---------- */
     this.engine = null;
     this.controller = null;
 
@@ -31,20 +32,17 @@ export default class Canvas extends React.Component {
     this.isResizing = false;
     this.currentHandle = null;
 
-    /* ---------- state ---------- */
+    /* ---------- local UI state ---------- */
     this.state = {
       width: 800,
       height: 500,
     };
-
-    this.stateRef = {
-      color: "black",
-      size: 1,
-      type: 2,
-    };
   }
 
   componentDidMount() {
+    if (typeof this.props.getState !== "function") {
+      throw new Error("Canvas requires getState() prop");
+    }
     const canvas = this.canvasRef.current;
     const ctx = canvas.getContext("2d");
 
@@ -54,13 +52,17 @@ export default class Canvas extends React.Component {
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    /* ---------- create engine ---------- */
     this.engine = createCanvasEngine(canvas, this.overlayRef.current);
 
+    /* ---------- notify App ---------- */
     this.props.onEngineReady?.(this.engine);
+
+    /* ---------- controller uses App editorState ---------- */
     this.controller = new CanvasController(
       this.engine,
       null,
-      () => this.stateRef,
+      this.props.getState, // 🔥 SINGLE SOURCE OF TRUTH
     );
 
     this.switchTool(this.props.tool);
@@ -79,12 +81,13 @@ export default class Canvas extends React.Component {
       this.switchTool(this.props.tool);
     }
 
+    // Sync UI → editorState
     if (prevProps.color !== this.props.color) {
-      this.stateRef.color = this.props.color;
+      this.props.getState().color = this.props.color;
     }
 
     if (prevProps.toolConfig !== this.props.toolConfig) {
-      Object.assign(this.stateRef, this.props.toolConfig || {});
+      Object.assign(this.props.getState(), this.props.toolConfig || {});
     }
   }
 
@@ -92,6 +95,8 @@ export default class Canvas extends React.Component {
     window.removeEventListener("mousemove", this.resize);
     window.removeEventListener("mouseup", this.stopResize);
   }
+
+  /* ---------- tools ---------- */
 
   switchTool(toolKey) {
     if (!this.controller) return;
@@ -117,11 +122,14 @@ export default class Canvas extends React.Component {
     this.props.coord?.(pos);
   };
 
-  handlePointerUp = () => {
-    this.controller?.pointerUp();
+  handlePointerUp = (e) => {
+    const pos = e
+      ? getPos(e, this.canvasRef.current)
+      : this.controller?.lastPos;
+
+    this.controller?.pointerUp(pos);
     this.props.clearCoord?.();
   };
-
   /* ---------- resizing ---------- */
 
   startResize = (e) => {
@@ -208,7 +216,7 @@ export default class Canvas extends React.Component {
             style={{
               position: "absolute",
               inset: 0,
-              pointerEvents: "none", // 🔥 IMPORTANT
+              pointerEvents: "none",
             }}
           />
 

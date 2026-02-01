@@ -6,7 +6,7 @@ import ViewMenu from "./ViewMenu";
 import LayerMenu from "./LayerMenu";
 import ImageMenu from "./ImageMenu";
 import ColorMenu from "./ColorMenu";
-//import HelpMenu from "./HelpMenu";
+// import HelpMenu from "./HelpMenu";
 
 class Menubar extends React.Component {
   constructor(props) {
@@ -41,12 +41,18 @@ class Menubar extends React.Component {
 
   renderMenu = () => {
     const { activeMenu } = this.state;
-    const { setFooter, clearFooter, dispatchCommand } = this.props;
+    const {
+      setFooter,
+      clearFooter,
+      dispatchCommand,
+      isSelectionToolActive, // ✅ single source of truth
+    } = this.props;
 
     const commonProps = {
       setFooter,
       clearFooter,
       dispatchCommand,
+      isSelectionToolActive,
     };
 
     switch (activeMenu) {

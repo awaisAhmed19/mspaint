@@ -63,15 +63,17 @@ export default class CanvasController {
   /* -------- event forwarding -------- */
 
   pointerDown(pos) {
+    this.activeController?.onBeforeChange?.();
     this.activeController?.pointerDown(pos);
-  }
-
-  pointerMove(pos) {
-    this.activeController?.pointerMove(pos);
   }
 
   pointerUp(pos) {
     this.activeController?.pointerUp?.(pos);
+    this.activeController?.onAfterChange?.();
+  }
+
+  pointerMove(pos) {
+    this.activeController?.pointerMove(pos);
   }
 
   keyDown(key) {

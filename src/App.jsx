@@ -6,6 +6,16 @@ import Pallete from "./components/container3/Pallete";
 import Footer from "./components/container4/Footer";
 import { dispatchCommand } from "./commandRouter/index.js";
 import { createPersistence } from "./svc/presistence.js";
+
+import HistoryScope from "./components/container2/Engine/history.js";
+import SelectionScope from "./components/container2/Engine/selection.js";
+
+import { SHORTCUTS, getKeyCombo } from "./commands/shortcuts";
+import {
+  createTool,
+  TOOLS,
+} from "./components/container2/Engine/toolFactory.js";
+
 const AppMode = {
   DRAW: "DRAW",
   EDIT: "EDIT",
@@ -21,6 +31,20 @@ class App extends React.Component {
       canvasEngine: null,
       fileSystem: null,
       persistence: createPersistence(),
+    };
+    this.editorState = {
+      color: this.state?.currColor ?? "black",
+      size: 1,
+      type: null,
+
+      history: null,
+      selection: null,
+      clipboard: null,
+
+      setColor: (c) => {
+        this.editorState.color = c;
+        this.setState({ currColor: c }); // keep UI in sync
+      },
     };
     this.state = {
       mode: AppMode.DRAW,
@@ -56,9 +80,43 @@ class App extends React.Component {
     },
   };
 
+  componentDidMount() {
+    window.addEventListener("keydown", this.handleKeyDown);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("keydown", this.handleKeyDown);
+  }
   /* ================= APP STATE ================= */
 
+  handleKeyDown = (e) => {
+    const combo = getKeyCombo(e);
+    const cmd = SHORTCUTS[combo];
+    if (!cmd) return;
+
+    const selectionOnly = [
+      "EDIT_CUT",
+      "EDIT_COPY",
+      "EDIT_PASTE",
+      "EDIT_CLEAR_SELECTION",
+    ];
+
+    if (
+      selectionOnly.includes(cmd) &&
+      !this.editorState.isSelectionToolActive
+    ) {
+      return;
+    }
+
+    e.preventDefault();
+    this.dispatchCommand(cmd);
+  };
+
   setTool = (toolName) => {
+    const meta = TOOLS[toolName]?.meta;
+
+    this.editorState.isSelectionToolActive = !!meta?.supportsSelection;
+
     this.setState({ currTool: toolName });
   };
 
@@ -85,6 +143,7 @@ class App extends React.Component {
           setFooter={this.footer.msg}
           clearFooter={this.footer.resetMsg}
           dispatchCommand={this.dispatchCommand}
+          isSelectionToolActive={this.editorState.isSelectionToolActive}
         />
 
         <div className="container-2">
@@ -106,10 +165,20 @@ class App extends React.Component {
             tool={this.state.currTool}
             color={this.state.currColor}
             toolConfig={this.state.toolConfig}
+            getState={() => this.editorState}
             onEngineReady={(engine) => {
               this.commandCtx.canvasEngine = engine;
+
+              this.editorState.history = new HistoryScope(engine);
+              this.editorState.selection = new SelectionScope(engine);
+              this.editorState.clipboard = null;
+
+              this.commandCtx.history = this.editorState.history;
+              this.commandCtx.selection = this.editorState.selection;
+              this.commandCtx.clipboard = null;
             }}
           />
+
           <div className="right-sidebar"></div>
         </div>
 

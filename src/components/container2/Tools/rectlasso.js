@@ -30,7 +30,6 @@ export class RectLassoRenderer {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
 
-    // --- buffers ---
     this.bufferCanvas = document.createElement("canvas");
     this.bufferCtx = this.bufferCanvas.getContext("2d");
 
@@ -81,11 +80,10 @@ export class RectLassoRenderer {
   }
 
   end(pos) {
+    console.log(pos);
     if (this.isDragging) this.stopDragging();
     else if (this.isDrawing) this.finishRect(pos);
   }
-
-  /* ================= rectangle draw ================= */
 
   startRect(pos) {
     this.isDrawing = true;
@@ -122,7 +120,13 @@ export class RectLassoRenderer {
   finishRect(pos) {
     this.isDrawing = false;
     this.isSelected = true;
-    this.endpos = pos;
+
+    // 🔒 GUARANTEE endpos
+    this.endpos = pos ?? this.startpos;
+    if (!this.startpos || !this.endpos) {
+      this.reset();
+      return;
+    }
 
     const x = Math.min(this.startpos.x, this.endpos.x);
     const y = Math.min(this.startpos.y, this.endpos.y);
@@ -138,7 +142,7 @@ export class RectLassoRenderer {
 
     this.ctx.save();
     this.ctx.globalCompositeOperation = "source-over";
-    this.ctx.fillStyle = "#ffffff"; // or your canvas bg color
+    this.ctx.fillStyle = "#ffffff";
     this.ctx.fillRect(x, y, w, h);
     this.ctx.restore();
 

@@ -40,6 +40,14 @@ export default class StrokeController {
     this.prevPos = pos;
   }
 
+  onBeforeChange() {
+    const getState = this.getState;
+    if (typeof getState !== "function") return;
+
+    const history = getState().history;
+    history?.snapshot?.();
+  }
+
   pointerUp(pos) {
     if (!this.isDrawing) return;
 
