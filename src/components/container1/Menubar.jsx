@@ -65,8 +65,8 @@ class Menubar extends React.Component {
       case "view":
         return <ViewMenu {...commonProps} />;
 
-      case "layer":
-        return <LayerMenu {...commonProps} />;
+      // case "layer":
+      //   return <LayerMenu {...commonProps} />;
 
       case "image":
         return <ImageMenu {...commonProps} />;
@@ -87,7 +87,7 @@ class Menubar extends React.Component {
             <button onClick={() => this.setActiveMenu("file")}>File</button>
             <button onClick={() => this.setActiveMenu("edit")}>Edit</button>
             <button onClick={() => this.setActiveMenu("view")}>View</button>
-            <button onClick={() => this.setActiveMenu("layer")}>Layer</button>
+            {/* <button onClick={() => this.setActiveMenu("layer")}>Layer</button> */}
             <button onClick={() => this.setActiveMenu("image")}>Image</button>
             <button onClick={() => this.setActiveMenu("colors")}>Color</button>
             <button onClick={() => this.setActiveMenu("help")}>Help</button>

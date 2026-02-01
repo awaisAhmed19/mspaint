@@ -1,0 +1,123 @@
+/* windows.css — FINAL */
+
+@import "root.css";
+
+.window {
+  position: absolute;
+  top: 80px;
+  left: 140px;
+  z-index: 2000;
+
+  background-color: var(--main-color);
+  border-top: 1px solid var(--borderlight);
+  border-left: 1px solid var(--borderlight);
+  border-right: 1px solid var(--borderdark);
+  border-bottom: 1px solid var(--borderdark);
+
+  width: 260px;
+  font-size: 11px;
+  box-sizing: border-box;
+}
+
+.window-titlebar {
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: linear-gradient(to right, rgb(0, 0, 128), rgb(96, 128, 255));
+  color: white;
+
+  padding: 0 3px;
+  box-sizing: border-box;
+}
+
+.window-title-area {
+  display: flex;
+  align-items: center;
+}
+
+.window-title {
+  font-weight: bold;
+  font-size: 11px;
+  user-select: none;
+}
+
+.window-close-button {
+  width: 14px;
+  height: 14px;
+
+  background-color: var(--main-color);
+  border-top: 1px solid var(--borderlight);
+  border-left: 1px solid var(--borderlight);
+  border-right: 1px solid var(--borderdark);
+  border-bottom: 1px solid var(--borderdark);
+
+  padding: 0;
+}
+
+.window-close-button:active {
+  border-top: 1px solid var(--borderdark);
+  border-left: 1px solid var(--borderdark);
+  border-right: 1px solid var(--borderlight);
+  border-bottom: 1px solid var(--borderlight);
+}
+
+.window-content {
+  padding: 8px;
+  background-color: var(--main-color);
+  box-sizing: border-box;
+}
+
+fieldset {
+  border-top: 1px solid var(--borderdark);
+  border-left: 1px solid var(--borderdark);
+  border-right: 1px solid var(--borderlight);
+  border-bottom: 1px solid var(--borderlight);
+
+  padding: 6px;
+  margin: 0;
+}
+
+legend {
+  padding: 0 4px;
+}
+
+.radio-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 3px 0;
+}
+
+.sub-options {
+  margin-left: 14px;
+  margin-top: 4px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.button-group button {
+  min-width: 60px;
+  height: 22px;
+
+  background-color: var(--main-color);
+  border-top: 1px solid var(--borderlight);
+  border-left: 1px solid var(--borderlight);
+  border-right: 1px solid var(--borderdark);
+  border-bottom: 1px solid var(--borderdark);
+
+  font-size: 11px;
+}
+
+.button-group button:active {
+  border-top: 1px solid var(--borderdark);
+  border-left: 1px solid var(--borderdark);
+  border-right: 1px solid var(--borderlight);
+  border-bottom: 1px solid var(--borderlight);
+}

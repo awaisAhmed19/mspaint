@@ -189,8 +189,23 @@ export default class Canvas extends React.Component {
   }
 
   render() {
+    const bitmapView = this.props.viewBitmap;
+    const zoomed = this.props.zoomed;
     return (
-      <div className="canvasbackcontainer">
+      <div
+        className="canvasbackcontainer"
+        style={
+          zoomed || bitmapView
+            ? {
+                background: "#008080",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "100vh",
+              }
+            : {}
+        }
+      >
         <div
           className="canvascontainer"
           ref={this.canvasContainerRef}
@@ -198,18 +213,24 @@ export default class Canvas extends React.Component {
             width: this.state.width,
             height: this.state.height,
             position: "relative",
+            transform: zoomed ? "scale(2)" : "scale(1)",
+            transformOrigin: "center center",
           }}
         >
           <canvas
             ref={this.canvasRef}
             className="canvas"
-            style={{ width: "100%", height: "100%" }}
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
             onPointerDown={this.handlePointerDown}
             onPointerMove={this.handlePointerMove}
             onPointerUp={this.handlePointerUp}
             onPointerLeave={() => this.props.clearCoord?.()}
           />
 
+          {/* overlay stays aligned automatically */}
           <div
             ref={this.overlayRef}
             className="canvas-overlay"
@@ -220,21 +241,26 @@ export default class Canvas extends React.Component {
             }}
           />
 
-          <img
-            src="../../imgs/point.png"
-            className="resize-handle right"
-            onMouseDown={this.startResize}
-          />
-          <img
-            src="../../imgs/point.png"
-            className="resize-handle bottom"
-            onMouseDown={this.startResize}
-          />
-          <img
-            src="../../imgs/point.png"
-            className="resize-handle corner"
-            onMouseDown={this.startResize}
-          />
+          {/* 🔒 disable resize handles when zoomed */}
+          {!zoomed && (
+            <>
+              <img
+                src="../../imgs/point.png"
+                className="resize-handle right"
+                onMouseDown={this.startResize}
+              />
+              <img
+                src="../../imgs/point.png"
+                className="resize-handle bottom"
+                onMouseDown={this.startResize}
+              />
+              <img
+                src="../../imgs/point.png"
+                className="resize-handle corner"
+                onMouseDown={this.startResize}
+              />
+            </>
+          )}
         </div>
       </div>
     );

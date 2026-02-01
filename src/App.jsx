@@ -7,6 +7,8 @@ import Footer from "./components/container4/Footer";
 import { dispatchCommand } from "./commandRouter/index.js";
 import { createPersistence } from "./svc/presistence.js";
 
+import ImageController from "./components/container2/Engine/imageController.js";
+import ModalHost from "./components/container2/modal/ModalHost";
 import HistoryScope from "./components/container2/Engine/history.js";
 import SelectionScope from "./components/container2/Engine/selection.js";
 
@@ -25,15 +27,46 @@ class App extends React.Component {
   constructor(props) {
     super(props);
 
+    const thisApp = this; // ✅ LEGAL, CORRECT PLACE
+
     this.footerRef = React.createRef();
     this.canvasRef = React.createRef();
+
     this.commandCtx = {
       canvasEngine: null,
       fileSystem: null,
       persistence: createPersistence(),
+
+      ui: {
+        get showToolBox() {
+          return thisApp.state.ui.showToolBox;
+        },
+        get showColorBox() {
+          return thisApp.state.ui.showColorBox;
+        },
+        get showStatusBar() {
+          return thisApp.state.ui.showStatusBar;
+        },
+        get showTextToolbar() {
+          return thisApp.state.ui.showTextToolbar;
+        },
+
+        get zoomed() {
+          return thisApp.state.ui.zoomed;
+        },
+        get fullscreen() {
+          return thisApp.state.ui.fullscreen;
+        },
+        setState: (patch) => {
+          thisApp.setState((prev) => ({
+            ui: { ...prev.ui, ...patch },
+          }));
+        },
+      },
     };
+
     this.editorState = {
-      color: this.state?.currColor ?? "black",
+      color: "black",
       size: 1,
       type: null,
 
@@ -43,13 +76,23 @@ class App extends React.Component {
 
       setColor: (c) => {
         this.editorState.color = c;
-        this.setState({ currColor: c }); // keep UI in sync
+        this.setState({ currColor: c });
       },
     };
+
     this.state = {
       mode: AppMode.DRAW,
       currTool: "PENCIL",
       currColor: "black",
+      ui: {
+        showToolBox: true,
+        showColorBox: true,
+        showStatusBar: true,
+        showTextToolbar: false,
+        zoomed: false,
+        viewBitmap: false, // 👈 ADD
+        activeDialog: null,
+      },
       toolConfig: {
         type: null,
         options: {
@@ -59,7 +102,6 @@ class App extends React.Component {
       defaultFooterMsg: "For Help, click Help Topics on the Help Menu",
     };
   }
-
   /* ================= FOOTER API ================= */
 
   footer = {
@@ -82,6 +124,13 @@ class App extends React.Component {
 
   componentDidMount() {
     window.addEventListener("keydown", this.handleKeyDown);
+
+    document.addEventListener("fullscreenchange", () => {
+      const isFs = !!document.fullscreenElement;
+      this.setState((prev) => ({
+        ui: { ...prev.ui, fullscreen: isFs },
+      }));
+    });
   }
 
   componentWillUnmount() {
@@ -130,8 +179,8 @@ class App extends React.Component {
 
   /* ================= COMMAND DISPATCH ================= */
 
-  dispatchCommand = (cmd) => {
-    dispatchCommand(cmd, this.commandCtx);
+  dispatchCommand = (cmd, payload) => {
+    dispatchCommand(cmd, this.commandCtx, payload);
   };
 
   /* ================= RENDER ================= */
@@ -147,15 +196,16 @@ class App extends React.Component {
         />
 
         <div className="container-2">
-          <Sidebar
-            setFooter={this.footer.msg}
-            clearFooter={this.footer.resetMsg}
-            tool={this.state.currTool}
-            setTool={this.setTool}
-            currConfig={this.state.toolConfig}
-            onToolConfigChange={this.setToolConfig}
-          />
-
+          {this.state.ui.showToolBox && (
+            <Sidebar
+              setFooter={this.footer.msg}
+              clearFooter={this.footer.resetMsg}
+              tool={this.state.currTool}
+              setTool={this.setTool}
+              currConfig={this.state.toolConfig}
+              onToolConfigChange={this.setToolConfig}
+            />
+          )}
           <Canvas
             ref={this.canvasRef}
             Dim={{ WIDTH: 750, HEIGHT: 500 }}
@@ -166,6 +216,7 @@ class App extends React.Component {
             color={this.state.currColor}
             toolConfig={this.state.toolConfig}
             getState={() => this.editorState}
+            zoomed={this.state.ui.zoomed}
             onEngineReady={(engine) => {
               this.commandCtx.canvasEngine = engine;
 
@@ -176,15 +227,29 @@ class App extends React.Component {
               this.commandCtx.history = this.editorState.history;
               this.commandCtx.selection = this.editorState.selection;
               this.commandCtx.clipboard = null;
+
+              // 🔥 ADD THIS
+              this.commandCtx.imageController = new ImageController(
+                engine,
+                this.editorState.selection,
+              );
             }}
           />
 
           <div className="right-sidebar"></div>
         </div>
 
-        <Pallete setColor={this.setColor} />
+        {this.state.ui.showColorBox && <Pallete setColor={this.setColor} />}
 
-        <Footer ref={this.footerRef} />
+        {this.state.ui.showStatusBar && <Footer ref={this.footerRef} />}
+        <ModalHost
+          ui={this.state.ui}
+          dispatchCommand={this.dispatchCommand}
+          canvasInfo={{
+            width: this.commandCtx.canvasEngine?.width,
+            height: this.commandCtx.canvasEngine?.height,
+          }}
+        />
       </>
     );
   }

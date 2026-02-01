@@ -7,7 +7,7 @@
   background-color: var(--main-color);
   display: flex;
   flex-grow: 2;
-  height: 56px;
+  height: 7vh;
   width: 100vw;
   align-items: center;
   border-top: 1px solid var(--borderlight);

@@ -1,8 +1,10 @@
 import React from "react";
+import { VIEW_COMMANDS } from "../../commands/view.js";
 
 class ViewMenu extends React.Component {
   constructor(props) {
     super(props);
+
     this.Viewfootnote = {
       Tool_Box: "shows or hides the tool bar",
       View_Box: "shows or hides the color bar",
@@ -13,78 +15,54 @@ class ViewMenu extends React.Component {
       FullScreen: "Makes the application full screen",
     };
   }
+
   handleEnter = (e) => {
     const id = e.currentTarget.id;
-
     if (this.Viewfootnote[id]) {
       this.props.setFooter(this.Viewfootnote[id]);
-    } else {
-      console.warn("No footnote found for:", id);
     }
   };
 
   handleLeave = () => {
     this.props.clearFooter();
   };
+
+  handleClick = (e) => {
+    const id = e.currentTarget.id;
+    const cmd = VIEW_COMMANDS[id];
+    if (!cmd) return;
+    this.props.dispatchCommand(cmd);
+  };
+
+  MenuRow = ({ id, label, shortcut = "" }) => (
+    <tr
+      className="menu-row"
+      id={id}
+      onMouseEnter={this.handleEnter}
+      onMouseLeave={this.handleLeave}
+      onClick={this.handleClick}
+    >
+      <td className="tickspace"></td>
+      <td className="menu-item-label">{label}</td>
+      <td className="menu-item-shortcut">{shortcut}</td>
+      <td className="secondary-dialog-arrow"></td>
+    </tr>
+  );
+
   render() {
+    const Row = this.MenuRow;
+
     return (
       <div className="dropdown" id="view_toggle">
         <table
           className="view-toggle-content"
-          style={{
-            width: "192px",
-            height: "150px",
-            fontSize: "11px",
-          }}
+          style={{ width: "192px", height: "150px", fontSize: "11px" }}
         >
           <tbody>
-            <tr
-              className="menu-row"
-              id="Tool_Box"
-              onMouseEnter={this.handleEnter}
-              onMouseLeave={this.handleLeave}
-            >
-              <td className="tickspace"></td>
-              <td className="menu-item-label">Tool Box</td>
-              <td className="menu-item-shortcut"></td>
-              <td className="secondary-dialog-arrow"></td>
-            </tr>
-
-            <tr
-              className="menu-row"
-              id="View_Box"
-              onMouseEnter={this.handleEnter}
-              onMouseLeave={this.handleLeave}
-            >
-              <td className="tickspace"></td>
-              <td className="menu-item-label">Color-Box</td>
-              <td className="menu-item-shortcut">Ctrl+L</td>
-              <td className="secondary-dialog-arrow"></td>
-            </tr>
-
-            <tr
-              className="menu-row"
-              id="Status_Bar"
-              onMouseEnter={this.handleEnter}
-              onMouseLeave={this.handleLeave}
-            >
-              <td className="tickspace"></td>
-              <td className="menu-item-label">Status Bar</td>
-              <td className="menu-item-shortcut"></td>
-              <td className="secondary-dialog-arrow"></td>
-            </tr>
-
-            <tr
-              className="menu-row"
-              id="Text_Toolbar"
-              onMouseEnter={this.handleEnter}
-              onMouseLeave={this.handleLeave}
-            >
-              <td className="tickspace"></td>
-              <td className="menu-item-label">Text Toolbar</td>
-              <td className="menu-item-shortcut"></td>
-              <td className="secondary-dialog-arrow"></td>
-            </tr>
+            <Row id="Tool_Box" label="Tool Box" />
+            <Row id="View_Box" label="Color-Box" shortcut="Ctrl+L" />
+            <Row id="Status_Bar" label="Status Bar" />
+            <Row id="Text_Toolbar" label="Text Toolbar" />
 
             <tr className="div-line">
               <td colSpan="4">
@@ -92,41 +70,9 @@ class ViewMenu extends React.Component {
               </td>
             </tr>
 
-            <tr
-              className="menu-row"
-              id="Zoom"
-              onMouseEnter={this.handleEnter}
-              onMouseLeave={this.handleLeave}
-            >
-              <td className="tickspace"></td>
-              <td className="menu-item-label">Zoom</td>
-              <td className="menu-item-shortcut"></td>
-              <td className="secondary-dialog-arrow"></td>
-            </tr>
-
-            <tr
-              className="menu-row"
-              id="View_Bitmap"
-              onMouseEnter={this.handleEnter}
-              onMouseLeave={this.handleLeave}
-            >
-              <td className="tickspace"></td>
-              <td className="menu-item-label">View Bitmap</td>
-              <td className="menu-item-shortcut">Ctrl+F</td>
-              <td className="secondary-dialog-arrow"></td>
-            </tr>
-
-            <tr
-              className="menu-row"
-              id="FullScreen"
-              onMouseEnter={this.handleEnter}
-              onMouseLeave={this.handleLeave}
-            >
-              <td className="tickspace"></td>
-              <td className="menu-item-label">Full Screen</td>
-              <td className="menu-item-shortcut">F11</td>
-              <td className="secondary-dialog-arrow"></td>
-            </tr>
+            <Row id="Zoom" label="Zoom" />
+            <Row id="View_Bitmap" label="View Bitmap" shortcut="Ctrl+F" />
+            <Row id="FullScreen" label="Full Screen" shortcut="F11" />
           </tbody>
         </table>
       </div>
