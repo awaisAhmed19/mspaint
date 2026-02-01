@@ -6,6 +6,7 @@ import ViewMenu from "./ViewMenu";
 import LayerMenu from "./LayerMenu";
 import ImageMenu from "./ImageMenu";
 import ColorMenu from "./ColorMenu";
+import HelpMenu from "./HelpMenu";
 // import HelpMenu from "./HelpMenu";
 
 class Menubar extends React.Component {
@@ -73,6 +74,8 @@ class Menubar extends React.Component {
 
       case "colors":
         return <ColorMenu {...commonProps} />;
+      case "help":
+        return <HelpMenu {...commonProps} />;
 
       default:
         return null;

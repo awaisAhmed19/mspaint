@@ -368,3 +368,112 @@ define-custom-colors-button.disabled {
   border-right: 1px solid var(--borderlight);
   border-bottom: 1px solid var(--borderlight);
 }
+/* ===============================
+   ABOUT PAINT DIALOG
+   =============================== */
+
+#about-paint {
+  font-size: 11px;
+  line-height: 1.4;
+  color: black;
+}
+
+/* HEADER AREA */
+#about-paint-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* ICON */
+#about-paint-icon {
+  flex-shrink: 0;
+  image-rendering: pixelated;
+}
+
+/* RIGHT OF ICON */
+#about-paint-beside-icon {
+  flex: 1;
+}
+
+/* TITLE */
+#mspaint-project-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* VERSION */
+#mspaint-version {
+  margin-top: 2px;
+  font-size: 11px;
+  color: #333;
+}
+
+/* UPDATE STATUS PLACEHOLDER */
+#mspaint-update-status-area {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #555;
+}
+
+/* WHAT'S NEW BUTTON */
+#view-project-news {
+  margin-left: auto;
+  height: 22px;
+  padding: 0 8px;
+
+  background-color: var(--main-color);
+
+  border-top: 1px solid var(--borderlight);
+  border-left: 1px solid var(--borderlight);
+  border-right: 1px solid var(--borderdark);
+  border-bottom: 1px solid var(--borderdark);
+
+  font-size: 11px;
+}
+
+#view-project-news:active {
+  border-top: 1px solid var(--borderdark);
+  border-left: 1px solid var(--borderdark);
+  border-right: 1px solid var(--borderlight);
+  border-bottom: 1px solid var(--borderlight);
+}
+
+/* BODY TEXT */
+#about-paint p {
+  margin: 6px 0;
+}
+
+/* LINKS */
+#about-paint a {
+  color: #0000ee;
+  text-decoration: underline;
+}
+
+#about-paint a:visited {
+  color: #551a8b;
+}
+
+/* OK BUTTON */
+#close-about-paint {
+  min-width: 70px;
+  height: 22px;
+
+  background-color: var(--main-color);
+
+  border-top: 1px solid var(--borderlight);
+  border-left: 1px solid var(--borderlight);
+  border-right: 1px solid var(--borderdark);
+  border-bottom: 1px solid var(--borderdark);
+
+  font-size: 11px;
+}
+
+#close-about-paint:active {
+  border-top: 1px solid var(--borderdark);
+  border-left: 1px solid var(--borderdark);
+  border-right: 1px solid var(--borderlight);
+  border-bottom: 1px solid var(--borderlight);
+}

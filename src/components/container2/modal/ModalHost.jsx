@@ -6,7 +6,7 @@ import EditColorsDialog from "./EditColors";
 import SaveColorsDialog from "./SaveColor";
 import ManageStorageDialog from "./ManageStorage";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
-
+import AboutPaintDialog from "./About";
 function ModalHost({ ui, dispatchCommand, canvasInfo }) {
   switch (ui.activeDialog) {
     case "FLIP_ROTATE":
@@ -44,6 +44,13 @@ function ModalHost({ ui, dispatchCommand, canvasInfo }) {
     case "SAVE_COLORS":
       return (
         <SaveColorsDialog
+          dispatchCommand={dispatchCommand}
+          onClose={() => dispatchCommand("UI_CLOSE_DIALOG")}
+        />
+      );
+    case "HELP_ABOUT":
+      return (
+        <AboutPaintDialog
           dispatchCommand={dispatchCommand}
           onClose={() => dispatchCommand("UI_CLOSE_DIALOG")}
         />
