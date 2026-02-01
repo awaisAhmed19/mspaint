@@ -62,7 +62,7 @@ const SWATCH_STYLE = {
 };
 
 const COLLAPSED_WIDTH = 220;
-const EXPANDED_WIDTH = 430;
+const EXPANDED_WIDTH = 460;
 
 function LabelInput({ label, hotkey, x = 0, y }) {
   return (
@@ -111,7 +111,7 @@ class EditColorsDialog extends React.Component {
         className="window"
         style={{
           width: showCustom ? EXPANDED_WIDTH : COLLAPSED_WIDTH,
-          height: 360,
+          height: 260,
           display: "flex",
           flexDirection: "column",
         }}
@@ -130,11 +130,22 @@ class EditColorsDialog extends React.Component {
 
         {/* CONTENT */}
         <div className="window-content" style={{ flex: 1, padding: 6 }}>
-          <form>
-            <div style={{ display: "flex", height: "100%" }}>
-              {/* LEFT SIDE */}
+          <form style={{ height: "100%" }}>
+            <div
+              style={{
+                display: "flex",
+                height: "100%",
+                alignItems: "stretch",
+              }}
+            >
+              {/* LEFT PANEL */}
               <div
-                style={{ width: 200, paddingRight: 6, boxSizing: "border-box" }}
+                style={{
+                  width: 200,
+                  flexShrink: 0,
+                  paddingRight: 6,
+                  boxSizing: "border-box",
+                }}
               >
                 <label>
                   <span>
@@ -206,46 +217,16 @@ class EditColorsDialog extends React.Component {
                 </div>
               </div>
 
-              {/* RIGHT SIDE */}
+              {/* RIGHT PANEL */}
               {showCustom && (
                 <div
                   className="right-side"
-                  style={{ width: 230, position: "relative" }}
+                  style={{
+                    width: 230,
+                    flexShrink: 0,
+                    position: "relative",
+                  }}
                 >
-                  <div
-                    className="color-values-panel"
-                    style={{
-                      position: "absolute",
-                      left: 10,
-                      top: 170,
-                      display: "flex",
-                      gap: 8,
-                      marginTop: 10,
-                    }}
-                  >
-                    {/* LEFT: result color canvas */}
-                    <canvas
-                      width={58}
-                      height={40}
-                      className="result-color-canvas inset-shallow"
-                    />
-
-                    {/* RIGHT: controls */}
-                    <div
-                      className="color-values-fields"
-                      style={{ position: "relative", width: 170 }}
-                    >
-                      {/* HSL */}
-                      <LabelInput label="Hue:" hotkey="e" y={0} />
-                      <LabelInput label="Sat:" hotkey="S" y={22} />
-                      <LabelInput label="Lum:" hotkey="L" y={44} />
-
-                      {/* RGB */}
-                      <LabelInput label="Red:" hotkey="R" y={0} x={80} />
-                      <LabelInput label="Green:" hotkey="G" y={22} x={80} />
-                      <LabelInput label="Blue:" hotkey="u" y={44} x={80} />
-                    </div>
-                  </div>
                   <canvas
                     width={175}
                     height={187}
@@ -256,6 +237,33 @@ class EditColorsDialog extends React.Component {
                     height={187}
                     className="luminosity-canvas inset-shallow"
                   />
+
+                  <div
+                    className="color-values-panel"
+                    style={{
+                      position: "absolute",
+                      left: 10,
+                      top: 170,
+                      display: "flex",
+                      gap: 8,
+                    }}
+                  >
+                    <canvas
+                      width={58}
+                      height={40}
+                      className="result-color-canvas inset-shallow"
+                    />
+
+                    <div style={{ position: "relative", width: 170 }}>
+                      <LabelInput label="Hue:" hotkey="e" y={0} />
+                      <LabelInput label="Sat:" hotkey="S" y={22} />
+                      <LabelInput label="Lum:" hotkey="L" y={44} />
+
+                      <LabelInput label="Red:" hotkey="R" y={0} x={80} />
+                      <LabelInput label="Green:" hotkey="G" y={22} x={80} />
+                      <LabelInput label="Blue:" hotkey="u" y={44} x={80} />
+                    </div>
+                  </div>
 
                   <button className="add-to-custom-colors-button" type="button">
                     <span>

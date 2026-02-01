@@ -4,8 +4,9 @@
 
 .window {
   position: absolute;
-  top: 80px;
-  left: 140px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 2000;
 
   background-color: var(--main-color);
@@ -153,7 +154,7 @@ legend {
 /* SAVE COLORS DIALOG            */
 /* ============================= */
 
-.window-content form > div {
+.window-content form > div.form-column {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -231,24 +232,23 @@ legend {
 
   cursor: default;
 }
-define-custom-colors-button:active {
+
+.define-custom-colors-button:active {
   border-top: 1px solid var(--borderdark);
   border-left: 1px solid var(--borderdark);
   border-right: 1px solid var(--borderlight);
   border-bottom: 1px solid var(--borderlight);
 }
-define-custom-colors-button: disabled,
-define-custom-colors-button.disabled {
+
+.define-custom-colors-button:disabled,
+.define-custom-colors-button.disabled {
   color: rgb(128, 128, 128);
   cursor: default;
-
-  text-shadow: 1px 1px 0px rgb(255, 255, 255);
-
+  text-shadow: 1px 1px 0 rgb(255, 255, 255);
   border-top: 1px solid var(--borderlight);
   border-left: 1px solid var(--borderlight);
   border-right: 1px solid var(--borderlighterdark);
   border-bottom: 1px solid var(--borderlighterdark);
-
   background-color: var(--main-color);
 }
 /* .swatch { */
@@ -262,11 +262,10 @@ define-custom-colors-button.disabled {
 /*   border-bottom: 1px solid var(--borderlight); */
 /* } */
 /* RIGHT PANEL CONTAINER */
+
 .right-side {
   position: relative;
-  height: 100%;
   background-color: var(--main-color);
-
   border-left: 1px solid var(--borderdark);
   padding: 6px;
   box-sizing: border-box;
